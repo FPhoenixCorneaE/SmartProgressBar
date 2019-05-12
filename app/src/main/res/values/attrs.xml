@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="SmartProgressBar">
+        <attr name="spb_max" format="integer" />
+        <attr name="spb_progress" format="integer" />
+        <attr name="spb_progress_start_color" format="color" />
+        <attr name="spb_progress_center_color" format="color" />
+        <attr name="spb_progress_end_color" format="color" />
+        <attr name="spb_progress_bar_bg_color" format="color" />
+        <attr name="spb_show_percent_text" format="boolean" />
+        <attr name="spb_show_percent_sign" format="boolean" />
+        <attr name="spb_percent_text_color" format="color" />
+        <attr name="spb_percent_text_size" format="dimension" />
+        <attr name="spb_border_color" format="color" />
+        <attr name="spb_border_width" format="dimension" />
+        <attr name="spb_radius" format="dimension" />
+        <attr name="spb_top_left_radius" format="dimension" />
+        <attr name="spb_top_right_radius" format="dimension" />
+        <attr name="spb_bottom_left_radius" format="dimension" />
+        <attr name="spb_bottom_right_radius" format="dimension" />
+        <attr name="spb_shape_style" format="enum">
+            <enum name="HORIZONTAL" value="0" />
+            <enum name="VERTICAL" value="1" />
+            <enum name="RING" value="2" />
+            <enum name="SECTOR" value="3" />
+        </attr>
+    </declare-styleable>
+
+</resources>
