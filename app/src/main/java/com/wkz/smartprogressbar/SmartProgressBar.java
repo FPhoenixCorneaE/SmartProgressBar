@@ -23,20 +23,22 @@ import java.lang.annotation.Target;
 
 /**
  * 自定义的进度条
- * 样式风格有水平、竖直、圆形、扇形...
+ * 样式风格有水平、竖直、圆形、扇形、......
  *
  * @author wkz
  * @date 2019/05/05 21:23
  */
 public class SmartProgressBar extends View {
 
+
+    private static final float DEFAULT_WIDTH = 100F;
+    private static final float DEFAULT_HEIGHT = 100F;
     private static final int DEFAULT_PROGRESS_COLOR = Color.BLUE;
     private static final int DEFAULT_PROGRESS_BAR_BG_COLOR = Color.WHITE;
     private static final int DEFAULT_PERCENT_TEXT_COLOR = Color.BLACK;
+    private static final float DEFAULT_PERCENT_TEXT_SIZE = 15F;
     private static final int DEFAULT_BORDER_COLOR = Color.RED;
     private static final int DEFAULT_MAX = 100;
-    private static final float DEFAULT_PERCENT_TEXT_SIZE = 18;
-    private static final float DEFAULT_BORDER_WIDTH = 1;
 
 
     @Target(ElementType.FIELD)
@@ -60,6 +62,17 @@ public class SmartProgressBar extends View {
         int SECTOR = 3;
     }
 
+
+    /**
+     * 进度条背景颜色
+     **/
+    private int mProgressBarBgColor = DEFAULT_PROGRESS_BAR_BG_COLOR;
+    /**
+     * 进度颜色
+     */
+    private int mProgressStartColor = DEFAULT_PROGRESS_COLOR;
+    private int mProgressCenterColor = DEFAULT_PROGRESS_COLOR;
+    private int mProgressEndColor = DEFAULT_PROGRESS_COLOR;
     /**
      * 边框颜色
      */
@@ -69,9 +82,13 @@ public class SmartProgressBar extends View {
      */
     private float mBorderWidth;
     /**
-     * 进度条是否是空心
+     * 进度提示文字大小
      **/
-    private boolean mIsStroke;
+    private float mPercentTextSize = DEFAULT_PERCENT_TEXT_SIZE;
+    /**
+     * 进度提示文字颜色
+     **/
+    private int mPercentTextColor = DEFAULT_PERCENT_TEXT_COLOR;
     /**
      * 进度条中心X坐标
      **/
@@ -81,37 +98,11 @@ public class SmartProgressBar extends View {
      **/
     private float mCenterY;
     /**
-     * 进度提示文字大小
-     **/
-    private float mPercentTextSize = 18;
-    /**
-     * 进度提示文字颜色
-     **/
-    private int mPercentTextColor = 0xff4b749d;
-    /**
-     * 进度条背景颜色
-     **/
-    private int mProgressBarBgColor = 0xffededed;
-    /**
-     * 进度颜色
-     */
-    private int mProgressStartColor = DEFAULT_PROGRESS_COLOR;
-    private int mProgressCenterColor = DEFAULT_PROGRESS_COLOR;
-    private int mProgressEndColor = DEFAULT_PROGRESS_COLOR;
-    /**
-     * 扇形扫描进度的颜色
-     */
-    private int mSectorColor = 0xaaffffff;
-    /**
-     * 扇形扫描背景
-     */
-    private int unSweepColor = 0xaa5e5e5e;
-    /**
      * 进度条样式
      **/
     private int mShapeStyle = ShapeStyle.HORIZONTAL;
     /**
-     * 圆环扇形圆角半径
+     * 圆环/扇形圆角半径
      **/
     private float mRadius;
     /**
@@ -125,11 +116,11 @@ public class SmartProgressBar extends View {
     /**
      * 进度最大值
      **/
-    private int mMax = 100;
+    private int mMax = DEFAULT_MAX;
     /**
      * 进度值
      **/
-    private int mProgress = 0;
+    private int mProgress;
     /**
      * 进度文字是否显示百分号
      **/
@@ -138,10 +129,6 @@ public class SmartProgressBar extends View {
      * 进度文字是否显示
      */
     private boolean mIsShowPercentText;
-    /**
-     * 画笔
-     */
-    private Paint mPaint;
     /**
      * 进度画笔
      */
@@ -212,24 +199,27 @@ public class SmartProgressBar extends View {
      * 初始化
      */
     private void init() {
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
+        /*进度画笔*/
         mProgressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mProgressPaint.setStyle(Paint.Style.FILL);
 
+        /*进度条背景画笔*/
         mProgressBarBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mProgressBarBgPaint.setColor(mProgressBarBgColor);
 
+        /*边框画笔*/
         mBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBorderPaint.setColor(mBorderColor);
         mBorderPaint.setStyle(Paint.Style.STROKE);
         mBorderPaint.setStrokeWidth(mBorderWidth);
 
+        /*进度百分比字体画笔*/
         mPercentTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPercentTextPaint.setColor(mPercentTextColor);
         mPercentTextPaint.setStyle(Paint.Style.FILL);
         mPercentTextPaint.setTextSize(mPercentTextSize);
 
+        /*若是设置了radius属性，四个圆角属性值以radius属性值为准*/
         if (mRadius > 0) {
             mTopLeftRadius = mTopRightRadius = mBottomLeftRadius = mBottomRightRadius = mRadius;
         }
@@ -252,13 +242,13 @@ public class SmartProgressBar extends View {
         int width, height;
         if (widthSpecMode == MeasureSpec.AT_MOST
                 || widthSpecMode == MeasureSpec.UNSPECIFIED) {
-            width = dp2px(getContext(), 100);
+            width = dp2px(getContext(), DEFAULT_WIDTH);
         } else {
             width = widthSpecSize;
         }
         if (heightSpecMode == MeasureSpec.AT_MOST
                 || heightSpecMode == MeasureSpec.UNSPECIFIED) {
-            height = dp2px(getContext(), 100);
+            height = dp2px(getContext(), DEFAULT_HEIGHT);
         } else {
             height = heightSpecSize;
         }
@@ -268,10 +258,6 @@ public class SmartProgressBar extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (isInEditMode()) {
-            return;
-        }
-
         mCenterX = (float) getWidth() / 2;
         mCenterY = (float) getHeight() / 2;
 
@@ -283,23 +269,51 @@ public class SmartProgressBar extends View {
                     mBorderWidth + (float) mProgress / mMax * (getWidth() - mBorderWidth * 2),
                     (getHeight() - mBorderWidth * 2) / 2,
                     new int[]{mProgressStartColor, mProgressCenterColor, mProgressEndColor},
-                    new float[]{0, 0.5f, 1}, Shader.TileMode.MIRROR);
+                    new float[]{0, 0.5f, 1}, Shader.TileMode.MIRROR
+            );
 
             mProgressPaint.setShader(linearGradient);
         } else if (mShapeStyle == ShapeStyle.VERTICAL) {
             /*创建线性颜色渐变器*/
             Shader linearGradient = new LinearGradient(
                     (getWidth() - mBorderWidth * 2) / 2,
-                    getHeight()-mBorderWidth,
+                    getHeight() - mBorderWidth,
                     (getWidth() - mBorderWidth * 2) / 2,
-                    getHeight() - (float) mProgress / mMax * (getHeight() - mBorderWidth * 2)-mBorderWidth,
+                    getHeight() - (float) mProgress / mMax * (getHeight() - mBorderWidth * 2) - mBorderWidth,
                     new int[]{mProgressStartColor, mProgressCenterColor, mProgressEndColor},
-                    new float[]{0, 0.5f, 1}, Shader.TileMode.MIRROR);
+                    new float[]{0, 0.5f, 1}, Shader.TileMode.MIRROR
+            );
             mProgressPaint.setShader(linearGradient);
-        } else if (mShapeStyle == ShapeStyle.RING || mShapeStyle == ShapeStyle.SECTOR) {
+        } else if (mShapeStyle == ShapeStyle.RING) {
             /*创建扫描式渐变器*/
-            Shader sweepGradient = new SweepGradient(0, 0,
-                    mProgressStartColor, mProgressEndColor);
+            int[] colors = new int[]{
+                    mProgressStartColor,
+                    mProgressCenterColor,
+                    mProgressEndColor,
+                    mProgressStartColor
+            };
+            float[] positions = new float[]{0, 0.45F, 0.9F, 1F};
+            Shader sweepGradient = new SweepGradient(
+                    0,
+                    0,
+                    colors,
+                    positions
+            );
+
+            mProgressPaint.setShader(sweepGradient);
+
+            Matrix gradientMatrix = new Matrix();
+            gradientMatrix.setTranslate(mCenterX, mCenterY);
+            sweepGradient.setLocalMatrix(gradientMatrix);
+        }
+        if (mShapeStyle == ShapeStyle.SECTOR) {
+            /*创建扫描式渐变器*/
+            Shader sweepGradient = new SweepGradient(
+                    0,
+                    0,
+                    new int[]{mProgressStartColor, mProgressCenterColor, mProgressEndColor},
+                    null
+            );
 
             mProgressPaint.setShader(sweepGradient);
 
@@ -312,9 +326,6 @@ public class SmartProgressBar extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (isInEditMode()) {
-            return;
-        }
         canvas.save();
         if (mShapeStyle == ShapeStyle.HORIZONTAL) {
             drawHorizontalProgressBar(canvas);
@@ -353,30 +364,22 @@ public class SmartProgressBar extends View {
 
         // 绘制进度
         mPath.reset();
-        mPath.addRoundRect(new RectF(
+        mPath.addRoundRect(
+                new RectF(
                         mBorderWidth,
                         mBorderWidth,
                         mBorderWidth + (float) mProgress / mMax * (getWidth() - mBorderWidth * 2),
-                        getHeight() - mBorderWidth),
-                mRadii, Path.Direction.CW);
+                        getHeight() - mBorderWidth
+                ),
+                mRadii,
+                Path.Direction.CW
+        );
         canvas.drawPath(mPath, mProgressPaint);
 
 
         if (mIsShowPercentText) {
             // 绘制进度文字和进度百分比符号
-            String percent = String.valueOf(mProgress * 100 / mMax);
-            if (mIsShowPercentSign) {
-                percent = percent + "%";
-            }
-
-            Rect rect = new Rect();
-            mPercentTextPaint.getTextBounds(percent, 0, percent.length(), rect);
-            float textWidth = rect.width();
-            float textHeight = rect.height();
-            if (textWidth >= getWidth()) {
-                textWidth = getWidth();
-            }
-            canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
+            drawPercentText(canvas);
         }
     }
 
@@ -386,7 +389,7 @@ public class SmartProgressBar extends View {
      * @param canvas 画布
      */
     private void drawVerticalProgressBar(Canvas canvas) {
-        //绘制进度条背景
+        // 绘制进度条背景
         mPath.addRoundRect(new RectF(
                         mBorderWidth / 2,
                         mBorderWidth / 2,
@@ -395,36 +398,24 @@ public class SmartProgressBar extends View {
                 mRadii, Path.Direction.CW);
         canvas.drawPath(mPath, mProgressBarBgPaint);
 
-        //绘制边框
+        // 绘制边框
         if (mBorderWidth > 0) {
             canvas.drawPath(mPath, mBorderPaint);
         }
 
-        //绘制进度
+        // 绘制进度
         mPath.reset();
         mPath.addRoundRect(new RectF(
-                        mBorderWidth ,
-                        getHeight() - (float) mProgress / mMax * (getHeight() - mBorderWidth *2)-mBorderWidth,
-                        getWidth() - mBorderWidth ,
-                        getHeight() - mBorderWidth ),
+                        mBorderWidth,
+                        getHeight() - (float) mProgress / mMax * (getHeight() - mBorderWidth * 2) - mBorderWidth,
+                        getWidth() - mBorderWidth,
+                        getHeight() - mBorderWidth),
                 mRadii, Path.Direction.CW);
         canvas.drawPath(mPath, mProgressPaint);
 
         if (mIsShowPercentText) {
             // 绘制进度文字和进度百分比符号
-            String percent = String.valueOf(mProgress * 100 / mMax);
-            if (mIsShowPercentSign) {
-                percent = percent + "%";
-            }
-
-            Rect rect = new Rect();
-            mPercentTextPaint.getTextBounds(percent, 0, percent.length(), rect);
-            float textWidth = rect.width();
-            float textHeight = rect.height();
-            if (textWidth >= getWidth()) {
-                textWidth = getWidth();
-            }
-            canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
+            drawPercentText(canvas);
         }
     }
 
@@ -434,36 +425,46 @@ public class SmartProgressBar extends View {
      * @param canvas 画布
      */
     private void drawRingProgressBar(Canvas canvas) {
+        float strokeWidth = mCenterX - mRadius - mBorderWidth;
         // 绘制进度条背景
         mProgressBarBgPaint.setStyle(Paint.Style.STROKE);
-        mProgressBarBgPaint.setStrokeWidth(mCenterX - mRadius);
-        canvas.drawCircle(mCenterX, mCenterY, mRadius, mProgressBarBgPaint);
+        mProgressBarBgPaint.setStrokeWidth(strokeWidth);
+        canvas.drawCircle(
+                mCenterX,
+                mCenterY,
+                mCenterX - mBorderWidth - strokeWidth / 2,
+                mProgressBarBgPaint
+        );
+
+        // 绘制边框
+        if (mBorderWidth > 0) {
+            mPath.addCircle(mCenterX, mCenterY, mCenterX - mBorderWidth / 2, Path.Direction.CW);
+            canvas.drawPath(mPath, mBorderPaint);
+        }
 
         // 绘制进度
+        mPath.reset();
         mProgressPaint.setStyle(Paint.Style.STROKE);
         mProgressPaint.setStrokeCap(Paint.Cap.ROUND);
-        mProgressPaint.setStrokeWidth(mCenterX - mRadius);
-
+        mProgressPaint.setStrokeJoin(Paint.Join.ROUND);
+        mProgressPaint.setDither(true);
+        mProgressPaint.setStrokeWidth(strokeWidth);
+        // 逆时针旋转画布90度
         canvas.rotate(-90, mCenterX, mCenterY);
-        RectF oval = new RectF(mCenterX - mRadius, mCenterY - mRadius, mRadius + mCenterX, mRadius + mCenterY);
-        canvas.drawArc(oval, 10, 350 * mProgress / (float) mMax, false, mProgressPaint);
+        RectF oval = new RectF(
+                mBorderWidth + strokeWidth / 2,
+                mBorderWidth + strokeWidth / 2,
+                getWidth() - mBorderWidth - strokeWidth / 2,
+                getHeight() - mBorderWidth - strokeWidth / 2
+        );
+        mPath.addArc(oval, 0, 360 * mProgress / (float) mMax);
+        canvas.drawPath(mPath, mProgressPaint);
 
         if (mIsShowPercentText) {
-            // 绘制进度文字和进度百分比符号
+            // 顺时针旋转画布90度
             canvas.rotate(90, mCenterX, mCenterY);
-            String percent = String.valueOf(mProgress * 100 / mMax);
-            if (mIsShowPercentSign) {
-                percent = percent + "%";
-            }
-
-            Rect rect = new Rect();
-            mPercentTextPaint.getTextBounds(percent, 0, percent.length(), rect);
-            float textWidth = rect.width();
-            float textHeight = rect.height();
-            if (textWidth >= mRadius * 2) {
-                textWidth = mRadius * 2;
-            }
-            canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
+            // 绘制进度文字和进度百分比符号
+            drawPercentText(canvas);
         }
     }
 
@@ -478,34 +479,52 @@ public class SmartProgressBar extends View {
 
         // 绘制边框
         if (mBorderWidth > 0) {
-            mPath.addCircle(mCenterX, mCenterY, mCenterX - mBorderWidth, Path.Direction.CW);
+            mPath.addCircle(mCenterX, mCenterY, mCenterX - mBorderWidth / 2, Path.Direction.CW);
             canvas.drawPath(mPath, mBorderPaint);
         }
 
         // 绘制进度
+        // 逆时针旋转画布90度
         canvas.rotate(-90, mCenterX, mCenterY);
-        RectF oval = new RectF(mBorderWidth * 2,
-                mBorderWidth * 2,
-                getWidth() - mBorderWidth * 2,
-                getHeight() - mBorderWidth * 2);
+        RectF oval = new RectF(
+                mBorderWidth,
+                mBorderWidth,
+                getWidth() - mBorderWidth,
+                getHeight() - mBorderWidth
+        );
         canvas.drawArc(oval, 0, 360 * mProgress / (float) mMax, true, mProgressPaint);
 
         if (mIsShowPercentText) {
-            // 绘制进度文字和进度百分比符号
+            // 顺时针旋转画布90度
             canvas.rotate(90, mCenterX, mCenterY);
-            String percent = String.valueOf(mProgress * 100 / mMax);
-            if (mIsShowPercentSign)
-                percent = percent + "%";
-
-            Rect rect = new Rect();
-            mPercentTextPaint.getTextBounds(percent, 0, percent.length(), rect);
-            float textWidth = rect.width();
-            float textHeight = rect.height();
-            if (textWidth >= getWidth() - mBorderWidth * 2) {
-                textWidth = getWidth() - mBorderWidth * 2;
-            }
-            canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
+            // 绘制进度文字和进度百分比符号
+            drawPercentText(canvas);
         }
+    }
+
+    /**
+     * 绘制进度文字和进度百分比符号
+     *
+     * @param canvas 画布
+     */
+    private void drawPercentText(Canvas canvas) {
+        String percent = String.valueOf(mProgress * 100 / mMax);
+        if (mIsShowPercentSign) {
+            percent = percent + "%";
+        }
+
+        Rect rect = new Rect();
+        // 获取字符串的宽高值
+        mPercentTextPaint.getTextBounds(percent, 0, percent.length(), rect);
+        float textWidth = rect.width();
+        float textHeight = rect.height();
+        if (textWidth >= getWidth()) {
+            textWidth = getWidth();
+        }
+        if (textHeight >= getHeight()) {
+            textHeight = getHeight();
+        }
+        canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
     }
 
     public SmartProgressBar setProgress(int progress) {
@@ -534,5 +553,16 @@ public class SmartProgressBar extends View {
     private int dp2px(Context context, float dpValue) {
         float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+    /**
+     * px转dp
+     *
+     * @param pxValue px值
+     * @return dp值
+     */
+    public int px2dp(Context context, float pxValue) {
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
     }
 }
