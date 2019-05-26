@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * 自定义的进度条
- * 样式风格有水平、竖直、圆形、扇形、......
+ * 样式风格有水平、竖直、圆环、扇形、......
  *
  * @author wkz
  * @date 2019/05/05 21:23
@@ -561,7 +561,7 @@ public class SmartProgressBar extends View {
      * @param pxValue px值
      * @return dp值
      */
-    public int px2dp(Context context, float pxValue) {
+    private int px2dp(Context context, float pxValue) {
         float scale = context.getResources().getDisplayMetrics().density;
         return (int) (pxValue / scale + 0.5f);
     }
