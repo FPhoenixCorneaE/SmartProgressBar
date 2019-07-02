@@ -208,6 +208,15 @@ public class SmartProgressBar extends View {
             mShapeStyle = attributes.getInt(R.styleable.SmartProgressBar_spb_shape_style, 0);
             mIsAnimated = attributes.getBoolean(R.styleable.SmartProgressBar_spb_animated, true);
             mDuration = attributes.getInt(R.styleable.SmartProgressBar_spb_animated_duration, DEFAULT_ANIMATION_DURATION);
+
+            if (mMax <= 0) {
+                mMax = DEFAULT_MAX;
+            }
+            if (mProgress > mMax) {
+                mProgress = mMax;
+            } else if (mProgress < 0) {
+                mProgress = 0;
+            }
         } finally {
             attributes.recycle();
         }
