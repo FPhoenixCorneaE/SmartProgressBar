@@ -2,7 +2,7 @@
 智能的进度条，样式风格有水平、竖直、圆环、扇形、......
 ------------------------------------------------------------
 
-<img src="https://github.com/FPhoenixCorneaE/SmartProgressBar/blob/master/preview/smart_progress_bar.png" width="320" height="480"/>
+<img src="https://github.com/FPhoenixCorneaE/SmartProgressBar/blob/master/preview/smart_progress_bar.png" width="320" align="center"/>
 
 -----------------------------
 
