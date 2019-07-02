@@ -1,6 +1,7 @@
 package com.wkz.smartprogressbar;
 
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -13,8 +14,11 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -30,7 +34,6 @@ import java.lang.annotation.Target;
  */
 public class SmartProgressBar extends View {
 
-
     private static final float DEFAULT_WIDTH = 100F;
     private static final float DEFAULT_HEIGHT = 100F;
     private static final int DEFAULT_PROGRESS_COLOR = Color.BLUE;
@@ -39,6 +42,7 @@ public class SmartProgressBar extends View {
     private static final float DEFAULT_PERCENT_TEXT_SIZE = 15F;
     private static final int DEFAULT_BORDER_COLOR = Color.RED;
     private static final int DEFAULT_MAX = 100;
+    private static final int DEFAULT_ANIMATION_DURATION = 500;
 
 
     @Target(ElementType.FIELD)
@@ -102,9 +106,13 @@ public class SmartProgressBar extends View {
      **/
     private int mShapeStyle = ShapeStyle.HORIZONTAL;
     /**
-     * 圆环/扇形圆角半径
+     * 水平、竖直进度条圆角半径；圆环/扇形内圆半径
      **/
     private float mRadius;
+    /**
+     * 圆环/扇形是否顺时针方向绘制
+     */
+    private boolean mClockwise = true;
     /**
      * 水平、竖直进度条圆角半径
      */
@@ -149,6 +157,13 @@ public class SmartProgressBar extends View {
      * 绘制路径
      */
     private Path mPath;
+    /**
+     * 是否执行动画
+     */
+    private boolean mIsAnimated = true;
+    private ValueAnimator mAnimator;
+    private long mDuration = DEFAULT_ANIMATION_DURATION;
+    private ValueAnimator.AnimatorUpdateListener mAnimatorUpdateListener;
 
     public SmartProgressBar(Context context) {
         this(context, null);
@@ -185,11 +200,14 @@ public class SmartProgressBar extends View {
             mBorderColor = attributes.getColor(R.styleable.SmartProgressBar_spb_border_color, DEFAULT_BORDER_COLOR);
             mBorderWidth = attributes.getDimension(R.styleable.SmartProgressBar_spb_border_width, 0);
             mRadius = attributes.getDimension(R.styleable.SmartProgressBar_spb_radius, 0);
+            mClockwise = attributes.getBoolean(R.styleable.SmartProgressBar_spb_clockwise, true);
             mTopLeftRadius = attributes.getDimension(R.styleable.SmartProgressBar_spb_top_left_radius, 0);
             mTopRightRadius = attributes.getDimension(R.styleable.SmartProgressBar_spb_top_right_radius, 0);
             mBottomLeftRadius = attributes.getDimension(R.styleable.SmartProgressBar_spb_bottom_left_radius, 0);
             mBottomRightRadius = attributes.getDimension(R.styleable.SmartProgressBar_spb_bottom_right_radius, 0);
             mShapeStyle = attributes.getInt(R.styleable.SmartProgressBar_spb_shape_style, 0);
+            mIsAnimated = attributes.getBoolean(R.styleable.SmartProgressBar_spb_animated, true);
+            mDuration = attributes.getInt(R.styleable.SmartProgressBar_spb_animated_duration, DEFAULT_ANIMATION_DURATION);
         } finally {
             attributes.recycle();
         }
@@ -230,6 +248,47 @@ public class SmartProgressBar extends View {
 
         /*绘制路径*/
         mPath = new Path();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        // 是否执行动画
+        if (mIsAnimated) {
+            // 设置属性动画参数
+            if (mAnimator == null) {
+                mAnimator = new ValueAnimator();
+                mAnimator = ValueAnimator.ofFloat(0F, mProgress);
+                mAnimator.setRepeatCount(0);
+                mAnimator.setRepeatMode(ValueAnimator.RESTART);
+                mAnimator.setInterpolator(new LinearInterpolator());
+                mAnimator.setDuration(mDuration);
+                // 设置动画的回调
+                mAnimatorUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float animatedValue = (float) animation.getAnimatedValue();
+                        mProgress = (int) animatedValue;
+                        invalidate();
+                    }
+                };
+                mAnimator.addUpdateListener(mAnimatorUpdateListener);
+            }
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    mAnimator.start();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mIsAnimated && mAnimator != null) {
+            mAnimator.cancel();
+        }
     }
 
     @Override
@@ -457,7 +516,11 @@ public class SmartProgressBar extends View {
                 getWidth() - mBorderWidth - strokeWidth / 2,
                 getHeight() - mBorderWidth - strokeWidth / 2
         );
-        mPath.addArc(oval, 0, 360 * mProgress / (float) mMax);
+        if (mClockwise) {
+            mPath.addArc(oval, 0, 360 * mProgress / (float) mMax);
+        } else {
+            mPath.addArc(oval, 0, -360 * mProgress / (float) mMax);
+        }
         canvas.drawPath(mPath, mProgressPaint);
 
         if (mIsShowPercentText) {
@@ -492,7 +555,11 @@ public class SmartProgressBar extends View {
                 getWidth() - mBorderWidth,
                 getHeight() - mBorderWidth
         );
-        canvas.drawArc(oval, 0, 360 * mProgress / (float) mMax, true, mProgressPaint);
+        if (mClockwise) {
+            canvas.drawArc(oval, 0, 360 * mProgress / (float) mMax, true, mProgressPaint);
+        } else {
+            canvas.drawArc(oval, 0, -360 * mProgress / (float) mMax, true, mProgressPaint);
+        }
 
         if (mIsShowPercentText) {
             // 顺时针旋转画布90度
@@ -527,6 +594,152 @@ public class SmartProgressBar extends View {
         canvas.drawText(percent, mCenterX - textWidth / 2, mCenterY + textHeight / 2, mPercentTextPaint);
     }
 
+    private static final class SavedState extends BaseSavedState {
+        private int progress;
+
+        private SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.progress = in.readInt();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(this.progress);
+        }
+
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        // Force our ancestor class to save its state
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.progress = mProgress;
+        return ss;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+        setProgress(ss.progress);
+    }
+
+    public SmartProgressBar setProgressBarBgColor(int mProgressBarBgColor) {
+        this.mProgressBarBgColor = mProgressBarBgColor;
+        return this;
+    }
+
+    public SmartProgressBar setProgressStartColor(int mProgressStartColor) {
+        this.mProgressStartColor = mProgressStartColor;
+        return this;
+    }
+
+    public SmartProgressBar setProgressCenterColor(int mProgressCenterColor) {
+        this.mProgressCenterColor = mProgressCenterColor;
+        return this;
+    }
+
+    public SmartProgressBar setProgressEndColor(int mProgressEndColor) {
+        this.mProgressEndColor = mProgressEndColor;
+        return this;
+    }
+
+    public SmartProgressBar setBorderColor(int mBorderColor) {
+        this.mBorderColor = mBorderColor;
+        return this;
+    }
+
+    public SmartProgressBar setBorderWidth(float mBorderWidth) {
+        this.mBorderWidth = mBorderWidth;
+        return this;
+    }
+
+    public SmartProgressBar setPercentTextSize(float mPercentTextSize) {
+        this.mPercentTextSize = mPercentTextSize;
+        return this;
+    }
+
+    public SmartProgressBar setPercentTextColor(int mPercentTextColor) {
+        this.mPercentTextColor = mPercentTextColor;
+        return this;
+    }
+
+    public SmartProgressBar setShapeStyle(int mShapeStyle) {
+        this.mShapeStyle = mShapeStyle;
+        return this;
+    }
+
+    public SmartProgressBar setRadius(float mRadius) {
+        this.mRadius = mRadius;
+        setRadius(mRadius, mRadius, mRadius, mRadius);
+        return this;
+    }
+
+    public SmartProgressBar setClockwise(boolean mClockwise) {
+        this.mClockwise = mClockwise;
+        return this;
+    }
+
+    public SmartProgressBar setRadius(float mTopLeftRadius, float mTopRightRadius, float mBottomRightRadius, float mBottomLeftRadius) {
+        this.mTopLeftRadius = mTopLeftRadius;
+        this.mTopRightRadius = mTopRightRadius;
+        this.mBottomRightRadius = mBottomRightRadius;
+        this.mBottomLeftRadius = mBottomLeftRadius;
+        return this;
+    }
+
+    public SmartProgressBar setRadii(float[] mRadii) {
+        this.mRadii = mRadii;
+        return this;
+    }
+
+    public SmartProgressBar setIsShowPercentSign(boolean mIsShowPercentSign) {
+        this.mIsShowPercentSign = mIsShowPercentSign;
+        return this;
+    }
+
+    public SmartProgressBar setIsShowPercentText(boolean mIsShowPercentText) {
+        this.mIsShowPercentText = mIsShowPercentText;
+        return this;
+    }
+
+    public SmartProgressBar setIsAnimated(boolean mIsAnimated) {
+        this.mIsAnimated = mIsAnimated;
+        return this;
+    }
+
+    public SmartProgressBar setDuration(long mDuration) {
+        this.mDuration = mDuration;
+        return this;
+    }
+
+    public SmartProgressBar setAnimatorUpdateListener(ValueAnimator.AnimatorUpdateListener mAnimatorUpdateListener) {
+        this.mAnimatorUpdateListener = mAnimatorUpdateListener;
+        return this;
+    }
+
+    public SmartProgressBar setMax(int max) {
+        this.mMax = max;
+        return this;
+    }
+
     public SmartProgressBar setProgress(int progress) {
         if (progress > mMax) {
             this.mProgress = mMax;
@@ -539,9 +752,8 @@ public class SmartProgressBar extends View {
         return this;
     }
 
-    public SmartProgressBar setMax(int max) {
-        this.mMax = max;
-        return this;
+    public int getProgress() {
+        return mProgress;
     }
 
     /**

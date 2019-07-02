@@ -15,6 +15,7 @@
         <attr name="spb_border_color" format="color" />
         <attr name="spb_border_width" format="dimension" />
         <attr name="spb_radius" format="dimension" />
+        <attr name="spb_clockwise" format="boolean" />
         <attr name="spb_top_left_radius" format="dimension" />
         <attr name="spb_top_right_radius" format="dimension" />
         <attr name="spb_bottom_left_radius" format="dimension" />
@@ -25,6 +26,8 @@
             <enum name="RING" value="2" />
             <enum name="SECTOR" value="3" />
         </attr>
+        <attr name="spb_animated" format="boolean" />
+        <attr name="spb_animated_duration" format="integer" />
     </declare-styleable>
 
 </resources>

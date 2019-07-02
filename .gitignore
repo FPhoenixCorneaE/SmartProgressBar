@@ -13,3 +13,6 @@
 .externalNativeBuild
 /.idea
 /.gradle
+/gradle
+/gradlew
+/gradlew.bat
