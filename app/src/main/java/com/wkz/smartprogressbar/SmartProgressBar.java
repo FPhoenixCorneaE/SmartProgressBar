@@ -354,12 +354,22 @@ public class SmartProgressBar extends View {
             mProgressPaint.setShader(linearGradient);
         } else if (mShapeStyle == ShapeStyle.RING) {
             /*创建扫描式渐变器*/
-            int[] colors = new int[]{
-                    mProgressStartColor,
-                    mProgressCenterColor,
-                    mProgressEndColor,
-                    mProgressStartColor
-            };
+            int[] colors;
+            if (mClockwise) {
+                colors = new int[]{
+                        mProgressStartColor,
+                        mProgressCenterColor,
+                        mProgressEndColor,
+                        mProgressStartColor
+                };
+            } else {
+                colors = new int[]{
+                        mProgressEndColor,
+                        mProgressCenterColor,
+                        mProgressStartColor,
+                        mProgressEndColor
+                };
+            }
             float[] positions = new float[]{0, 0.45F, 0.9F, 1F};
             Shader sweepGradient = new SweepGradient(
                     0,
@@ -373,13 +383,26 @@ public class SmartProgressBar extends View {
             Matrix gradientMatrix = new Matrix();
             gradientMatrix.setTranslate(mCenterX, mCenterY);
             sweepGradient.setLocalMatrix(gradientMatrix);
-        }
-        if (mShapeStyle == ShapeStyle.SECTOR) {
+        } else if (mShapeStyle == ShapeStyle.SECTOR) {
             /*创建扫描式渐变器*/
+            int[] colors;
+            if (mClockwise) {
+                colors = new int[]{
+                        mProgressStartColor,
+                        mProgressCenterColor,
+                        mProgressEndColor
+                };
+            } else {
+                colors = new int[]{
+                        mProgressEndColor,
+                        mProgressCenterColor,
+                        mProgressStartColor
+                };
+            }
             Shader sweepGradient = new SweepGradient(
                     0,
                     0,
-                    new int[]{mProgressStartColor, mProgressCenterColor, mProgressEndColor},
+                    colors,
                     null
             );
 
@@ -652,6 +675,7 @@ public class SmartProgressBar extends View {
 
     public SmartProgressBar setProgressBarBgColor(int mProgressBarBgColor) {
         this.mProgressBarBgColor = mProgressBarBgColor;
+        this.mProgressBarBgPaint.setColor(mProgressBarBgColor);
         return this;
     }
 
@@ -672,21 +696,25 @@ public class SmartProgressBar extends View {
 
     public SmartProgressBar setBorderColor(int mBorderColor) {
         this.mBorderColor = mBorderColor;
+        this.mBorderPaint.setColor(mBorderColor);
         return this;
     }
 
     public SmartProgressBar setBorderWidth(float mBorderWidth) {
         this.mBorderWidth = mBorderWidth;
+        this.mBorderPaint.setStrokeWidth(mBorderWidth);
         return this;
     }
 
     public SmartProgressBar setPercentTextSize(float mPercentTextSize) {
         this.mPercentTextSize = mPercentTextSize;
+        this.mPercentTextPaint.setTextSize(mPercentTextSize);
         return this;
     }
 
     public SmartProgressBar setPercentTextColor(int mPercentTextColor) {
         this.mPercentTextColor = mPercentTextColor;
+        this.mPercentTextPaint.setColor(mPercentTextColor);
         return this;
     }
 

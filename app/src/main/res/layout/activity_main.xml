@@ -11,6 +11,7 @@
         android:id="@+id/spb_horizontal"
         android:layout_width="match_parent"
         android:layout_height="20dp"
+        android:visibility="gone"
         app:spb_animated="false"
         app:spb_animated_duration="1000"
         app:spb_border_color="@android:color/holo_red_dark"
@@ -37,6 +38,7 @@
         android:layout_width="20dp"
         android:layout_height="250dp"
         android:layout_marginTop="10dp"
+        android:visibility="gone"
         app:spb_animated="true"
         app:spb_animated_duration="1500"
         app:spb_border_color="@android:color/holo_red_dark"
@@ -61,7 +63,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="visible">
 
         <com.wkz.smartprogressbar.SmartProgressBar
             android:id="@+id/spb_ring_1"
@@ -76,7 +79,7 @@
             app:spb_percent_text_color="@android:color/holo_red_light"
             app:spb_percent_text_size="18sp"
             app:spb_progress="75"
-            app:spb_progress_bar_bg_color="@android:color/darker_gray"
+            app:spb_progress_bar_bg_color="#222222"
             app:spb_progress_center_color="@android:color/holo_red_light"
             app:spb_progress_end_color="@android:color/holo_orange_light"
             app:spb_progress_start_color="@android:color/holo_blue_light"
@@ -114,7 +117,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="gone">
 
         <com.wkz.smartprogressbar.SmartProgressBar
             android:id="@+id/spb_sector_1"
@@ -160,4 +164,29 @@
             app:spb_show_percent_sign="true"
             app:spb_show_percent_text="true" />
     </LinearLayout>
+
+    <com.wkz.smartprogressbar.ProgressBarLayout
+        android:id="@+id/pbl_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:pbl_clockwise="true"
+        app:pbl_progress="75"
+        app:pbl_progress_bar_bg_color="#592812"
+        app:pbl_progress_bar_height="290dp"
+        app:pbl_progress_bar_width="290dp"
+        app:pbl_progress_center_color="#D1C310"
+        app:pbl_progress_end_color="#C14900"
+        app:pbl_progress_start_color="#2E9CEB"
+        app:pbl_radius="105dp"
+        app:pbl_show_temperature_text="false"
+        app:pbl_show_time_text="true"
+        app:pbl_temperature_text="70"
+        app:pbl_temperature_text_color="#000000"
+        app:pbl_temperature_text_size="60"
+        app:pbl_temperature_unit_text_color="#ff0000"
+        app:pbl_time_hhmmss_text_size="50"
+        app:pbl_time_mmss_text_size="60"
+        app:pbl_time_text="6000"
+        app:pbl_time_text_color="#BDBDBD" />
 </LinearLayout>
