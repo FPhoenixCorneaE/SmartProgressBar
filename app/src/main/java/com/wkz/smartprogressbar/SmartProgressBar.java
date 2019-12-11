@@ -789,6 +789,10 @@ public class SmartProgressBar extends View {
         return this;
     }
 
+    public int getMax() {
+        return mMax;
+    }
+
     public int getProgress() {
         return mProgress;
     }

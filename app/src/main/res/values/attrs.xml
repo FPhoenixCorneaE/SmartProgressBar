@@ -12,16 +12,19 @@
         <attr name="pbl_radius" format="dimension" />
         <attr name="pbl_clockwise" format="boolean" />
         <attr name="pbl_show_temperature_text" format="boolean" />
-        <attr name="pbl_temperature_text" format="string" />
+        <attr name="pbl_temperature_text" format="integer" />
         <attr name="pbl_temperature_text_size" format="float" />
         <attr name="pbl_temperature_text_color" format="color" />
+        <attr name="pbl_temperature_text_bold" format="boolean" />
         <attr name="pbl_temperature_unit_text_size" format="float" />
         <attr name="pbl_temperature_unit_text_color" format="color" />
+        <attr name="pbl_temperature_unit_text_bold" format="boolean" />
         <attr name="pbl_show_time_text" format="boolean" />
-        <attr name="pbl_time_text" format="string" />
+        <attr name="pbl_time_text" format="integer" />
         <attr name="pbl_time_hhmmss_text_size" format="float" />
         <attr name="pbl_time_mmss_text_size" format="float" />
         <attr name="pbl_time_text_color" format="color" />
+        <attr name="pbl_time_text_bold" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="SmartProgressBar">
