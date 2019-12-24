@@ -231,6 +231,9 @@ public class SmartProgressBar extends View {
      * 初始化
      */
     private void init() {
+        // 关闭硬件加速,否则没有阴影效果
+        setLayerType(LAYER_TYPE_HARDWARE, null);
+
         /*进度画笔*/
         mProgressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mProgressPaint.setStyle(Paint.Style.FILL);
@@ -608,12 +611,27 @@ public class SmartProgressBar extends View {
 
         // 结束阶段进度
         if (mProgress / mMax > 0.9F) {
+            // 添加尾部阴影效果
+            if (mProgress / mMax >= 0.98F) {
+                mPath.reset();
+                if (mClockwise) {
+                    mPath.addArc(oval, 360 * (mProgress / mMax), 1);
+                    mEndProgressPaint.setShadowLayer(20, 0, 10, Color.BLACK);
+                } else {
+                    mPath.addArc(oval, -360 * (mProgress / mMax), -1);
+                    mEndProgressPaint.setShadowLayer(20, 0, -10, Color.BLACK);
+                }
+                canvas.drawPath(mPath, mEndProgressPaint);
+            }
+
             mPath.reset();
             if (mClockwise) {
                 mPath.addArc(oval, 360 * 0.9F, 360 * (mProgress / mMax - 0.9F));
             } else {
                 mPath.addArc(oval, -360 * 0.9F, -360 * (mProgress / mMax - 0.9F));
             }
+            // 去掉阴影效果
+            mEndProgressPaint.setShadowLayer(0, 0, 0, Color.TRANSPARENT);
             canvas.drawPath(mPath, mEndProgressPaint);
         }
 
