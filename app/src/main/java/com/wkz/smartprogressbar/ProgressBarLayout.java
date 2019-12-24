@@ -3,6 +3,7 @@ package com.wkz.smartprogressbar;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.FrameLayout;
@@ -35,7 +36,7 @@ public class ProgressBarLayout extends FrameLayout {
     private int mProgressEndColor;
     private boolean mClockwise;
     private float mRadius;
-    private int mProgress;
+    private float mProgress;
     private int mTemperature;
     private float mTemperatureTextSize;
     private int mTemperatureTextColor;
@@ -52,6 +53,7 @@ public class ProgressBarLayout extends FrameLayout {
     private float mProgressBarHeight;
     private boolean mShowTemperatureText;
     private boolean mShowTimeText;
+    private Typeface mTypeface;
 
     public ProgressBarLayout(@NonNull Context context) {
         this(context, null);
@@ -59,6 +61,7 @@ public class ProgressBarLayout extends FrameLayout {
 
     public ProgressBarLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mTypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/dincond_boldalternate.ttf");
         initAttributes(context, attrs);
         initLayout(context);
     }
@@ -80,7 +83,7 @@ public class ProgressBarLayout extends FrameLayout {
                 mProgressEndColor = attributes.getColor(R.styleable.ProgressBarLayout_pbl_progress_end_color, 0);
                 mClockwise = attributes.getBoolean(R.styleable.ProgressBarLayout_pbl_clockwise, true);
                 mRadius = attributes.getDimension(R.styleable.ProgressBarLayout_pbl_radius, 0);
-                mProgress = attributes.getInteger(R.styleable.ProgressBarLayout_pbl_progress, 0);
+                mProgress = attributes.getFloat(R.styleable.ProgressBarLayout_pbl_progress, 0F);
                 mShowTemperatureText = attributes.getBoolean(R.styleable.ProgressBarLayout_pbl_show_temperature_text, false);
                 mTemperature = attributes.getInteger(R.styleable.ProgressBarLayout_pbl_temperature_text, 0);
                 mTemperatureTextSize = attributes.getFloat(R.styleable.ProgressBarLayout_pbl_temperature_text_size, 60);
@@ -116,7 +119,7 @@ public class ProgressBarLayout extends FrameLayout {
         progressLp.gravity = Gravity.CENTER;
         mSpbProgress = new SmartProgressBar(context);
         mSpbProgress.setShapeStyle(SmartProgressBar.ShapeStyle.RING);
-        mSpbProgress.setIsAnimated(false);
+        mSpbProgress.setIsAnimated(true);
         setProgressBarBgColor(mProgressBarBgColor);
         setProgressStartColor(mProgressStartColor);
         setProgressCenterColor(mProgressCenterColor);
@@ -135,6 +138,7 @@ public class ProgressBarLayout extends FrameLayout {
         mTvTemperature.getPaint().setFakeBoldText(mTemperatureTextBold);
         mTvTemperature.setTextSize(mTemperatureTextSize);
         mTvTemperature.setTextColor(mTemperatureTextColor);
+        mTvTemperature.setTypeface(mTypeface);
 
         RelativeLayout.LayoutParams temperatureUnitLp = new RelativeLayout.LayoutParams(-2, -2);
         temperatureUnitLp.topMargin = 20;
@@ -143,6 +147,7 @@ public class ProgressBarLayout extends FrameLayout {
         mTvTemperatureUnit.getPaint().setFakeBoldText(mTemperatureUnitTextBold);
         mTvTemperatureUnit.setTextSize(mTemperatureUnitTextSize);
         mTvTemperatureUnit.setTextColor(mTemperatureUnitTextColor);
+        mTvTemperatureUnit.setTypeface(mTypeface);
 
         mRlTemperatureParent.addView(mTvTemperature);
         mRlTemperatureParent.addView(mTvTemperatureUnit, temperatureUnitLp);
@@ -160,8 +165,9 @@ public class ProgressBarLayout extends FrameLayout {
         timeLp.gravity = Gravity.CENTER;
         mTvTime = new TextView(context);
         addView(mTvTime, timeLp);
-        mTvTime.setTextColor(mTimeTextColor);
         mTvTime.getPaint().setFakeBoldText(mTimeTextBold);
+        mTvTime.setTextColor(mTimeTextColor);
+        mTvTime.setTypeface(mTypeface);
 
         // 设置时间文本
         setTimeText(mTime);
@@ -191,15 +197,19 @@ public class ProgressBarLayout extends FrameLayout {
         this.mSpbProgress.setRadius(radius);
     }
 
-    public void setProgress(int progress) {
+    public void setProgress(float progress) {
         this.mSpbProgress.setProgress(progress);
     }
 
-    public void setMax(int max) {
+    public void setMax(float max) {
         this.mSpbProgress.setMax(max);
     }
 
-    public int getMax() {
+    public void setDuration(long duration) {
+        this.mSpbProgress.setDuration(duration);
+    }
+
+    public float getMax() {
         return this.mSpbProgress.getMax();
     }
 
@@ -210,21 +220,35 @@ public class ProgressBarLayout extends FrameLayout {
     /**
      * 设置温度
      *
-     * @param temperature
+     * @param tempValue 温度
      */
-    public void setTemperatureText(int temperature) {
+    public void setTemperatureText(float tempValue) {
+        setTemperatureText(tempValue, false);
+    }
+
+    /**
+     * 设置温度
+     *
+     * @param tempValue       温度
+     * @param isFullReduction 是否满减,进度从100%-->0%
+     */
+    public void setTemperatureText(float tempValue, boolean isFullReduction) {
         if (mTvTime != null) {
             this.mTvTime.setVisibility(GONE);
         }
         if (mRlTemperatureParent != null) {
             this.mRlTemperatureParent.setVisibility(VISIBLE);
-            if (temperature < 0) {
-                temperature = 0;
+            if (tempValue < 0) {
+                tempValue = 0;
             }
-            this.mTvTemperature.setText(String.valueOf(temperature));
+            this.mTvTemperature.setText(String.valueOf((int) tempValue));
             this.mTvTemperatureUnit.setText("℃");
 
-            setProgress(temperature);
+            if (isFullReduction) {
+                setProgress(getMax() - tempValue);
+            } else {
+                setProgress(tempValue);
+            }
         } else {
             addTemperature(getContext());
         }
@@ -233,9 +257,19 @@ public class ProgressBarLayout extends FrameLayout {
     /**
      * 设置时间,单位"秒"
      *
-     * @param time
+     * @param timeValue 时间
      */
-    public void setTimeText(long time) {
+    public void setTimeText(float timeValue) {
+        setTimeText(timeValue, true);
+    }
+
+    /**
+     * 设置时间,单位"秒"
+     *
+     * @param timeValue       时间
+     * @param isFullReduction 是否满减,进度从100%-->0%
+     */
+    public void setTimeText(float timeValue, boolean isFullReduction) {
         if (mRlTemperatureParent != null) {
             this.mRlTemperatureParent.setVisibility(GONE);
         }
@@ -243,29 +277,37 @@ public class ProgressBarLayout extends FrameLayout {
         if (mTvTime != null) {
             this.mTvTime.setVisibility(VISIBLE);
 
-            if (time < 0) {
-                time = 0;
+            if (timeValue < 0) {
+                timeValue = 0;
             }
 
             try {
-                if (time >= 36000) {
-                    this.mTvTime.setText(formatTime("HH:mm:ss", time * 1000));
+                if (timeValue >= 10 * 60 * 60) {
+                    // 10小时以上
+                    this.mTvTime.setText(formatTime("HH:mm:ss", (long) (timeValue * 1000)));
                     this.mTvTime.setTextSize(mTimeHhmmssTextSize);
-                } else if (time >= 3600) {
-                    this.mTvTime.setText(formatTime("H:mm:ss", time * 1000));
+                } else if (timeValue >= 1 * 60 * 60) {
+                    // 1小时以上
+                    this.mTvTime.setText(formatTime("H:mm:ss", (long) (timeValue * 1000)));
                     this.mTvTime.setTextSize(mTimeHhmmssTextSize);
-                } else if (time >= 600) {
-                    this.mTvTime.setText(formatTime("mm:ss", time * 1000));
+                } else if (timeValue >= 10 * 60) {
+                    // 10分钟以上
+                    this.mTvTime.setText(formatTime("mm:ss", (long) (timeValue * 1000)));
                     this.mTvTime.setTextSize(mTimeMmssTextSize);
                 } else {
-                    this.mTvTime.setText(formatTime("m:ss", time * 1000));
+                    // 10分钟以内
+                    this.mTvTime.setText(formatTime("m:ss", (long) (timeValue * 1000)));
                     this.mTvTime.setTextSize(mTimeMmssTextSize);
                 }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
 
-            setProgress((int) (getMax() - time));
+            if (isFullReduction) {
+                setProgress((float) timeValue);
+            } else {
+                setProgress(getMax() - timeValue);
+            }
         } else {
             addTime(getContext());
         }
