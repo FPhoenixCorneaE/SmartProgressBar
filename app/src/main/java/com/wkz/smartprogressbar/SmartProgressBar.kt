@@ -541,10 +541,10 @@ class SmartProgressBar @JvmOverloads constructor(context: Context, attrs: Attrib
                 mPath!!.reset()
                 if (mClockwise) {
                     mPath!!.addArc(oval, 360 * (progress / max), 1f)
-                    mEndProgressPaint!!.setShadowLayer(20f, 0f, 10f, Color.BLACK)
+                    mEndProgressPaint!!.setShadowLayer(5f, 0f, 10f, Color.BLACK)
                 } else {
                     mPath!!.addArc(oval, -360 * (progress / max), -1f)
-                    mEndProgressPaint!!.setShadowLayer(20f, 0f, -10f, Color.BLACK)
+                    mEndProgressPaint!!.setShadowLayer(5f, 0f, -10f, Color.BLACK)
                 }
                 canvas.drawPath(mPath!!, mEndProgressPaint!!)
             }
