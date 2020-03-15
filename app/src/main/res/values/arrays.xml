@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ProgressColors">
+        <item>#ff0000</item>
+        <item>#ff0000</item>
+        <item>#ffff00</item>
+        <item>#00aa00</item>
+        <item>#00ffff</item>
+        <item>#0000ff</item>
+        <item>#0000ff</item>
+    </string-array>
+    <integer-array name="ProgressPositions">
+        <item>0</item>
+        <item>10</item>
+        <item>30</item>
+        <item>45</item>
+        <item>65</item>
+        <item>85</item>
+        <item>100</item>
+    </integer-array>
+</resources>

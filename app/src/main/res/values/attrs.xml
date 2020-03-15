@@ -5,10 +5,15 @@
         <attr name="pbl_progress_bar_width" format="dimension" />
         <attr name="pbl_progress_bar_height" format="dimension" />
         <attr name="pbl_progress_bar_bg_color" format="color" />
+        <attr name="pbl_progress_bar_bg_gradient" format="boolean" />
+        <attr name="pbl_progress_bar_bg_alpha" format="float" />
         <attr name="pbl_progress_start_color" format="color" />
         <attr name="pbl_progress_center_color" format="color" />
         <attr name="pbl_progress_end_color" format="color" />
-        <attr name="pbl_progress" format="integer" />
+        <attr name="pbl_progress_colors" format="reference" />
+        <attr name="pbl_progress_positions" format="reference" />
+        <attr name="pbl_progress_max" format="float" />
+        <attr name="pbl_progress" format="float" />
         <attr name="pbl_radius" format="dimension" />
         <attr name="pbl_clockwise" format="boolean" />
         <attr name="pbl_show_temperature_text" format="boolean" />
@@ -16,15 +21,22 @@
         <attr name="pbl_temperature_text_size" format="float" />
         <attr name="pbl_temperature_text_color" format="color" />
         <attr name="pbl_temperature_text_bold" format="boolean" />
+        <attr name="pbl_temperature_text_fontfamily" format="reference" />
         <attr name="pbl_temperature_unit_text_size" format="float" />
         <attr name="pbl_temperature_unit_text_color" format="color" />
         <attr name="pbl_temperature_unit_text_bold" format="boolean" />
+        <attr name="pbl_temperature_unit_res_id" format="reference" />
+        <attr name="pbl_temperature_unit_height" format="reference" />
+        <attr name="pbl_temperature_unit_top_margin" format="dimension" />
+        <attr name="pbl_temperature_unit_left_margin" format="dimension" />
         <attr name="pbl_show_time_text" format="boolean" />
         <attr name="pbl_time_text" format="integer" />
         <attr name="pbl_time_hhmmss_text_size" format="float" />
         <attr name="pbl_time_mmss_text_size" format="float" />
         <attr name="pbl_time_text_color" format="color" />
         <attr name="pbl_time_text_bold" format="boolean" />
+        <attr name="pbl_time_text_fontfamily" format="reference" />
+        <attr name="pbl_show_shadow" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="SmartProgressBar">
@@ -33,7 +45,11 @@
         <attr name="spb_progress_start_color" format="color" />
         <attr name="spb_progress_center_color" format="color" />
         <attr name="spb_progress_end_color" format="color" />
+        <attr name="spb_progress_colors" format="reference" />
+        <attr name="spb_progress_positions" format="reference" />
         <attr name="spb_progress_bar_bg_color" format="color" />
+        <attr name="spb_progress_bar_bg_gradient" format="boolean" />
+        <attr name="spb_progress_bar_bg_alpha" format="float" />
         <attr name="spb_show_percent_text" format="boolean" />
         <attr name="spb_show_percent_sign" format="boolean" />
         <attr name="spb_percent_text_color" format="color" />
@@ -54,6 +70,7 @@
         </attr>
         <attr name="spb_animated" format="boolean" />
         <attr name="spb_animated_duration" format="integer" />
+        <attr name="spb_show_shadow" format="boolean" />
     </declare-styleable>
 
 </resources>
