@@ -3,6 +3,7 @@ package com.wkz.smartprogressbar
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private var mSpbHorizontal: SmartProgressBar? = null
@@ -30,5 +31,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initData() {
+        var progress = 38f
+        val timer = Timer()
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    if (progress > 100) {
+                        timer.cancel()
+                        return@runOnUiThread
+                    }
+                    progress++
+                    mPblProgress?.setTemperatureText(progress)
+                }
+            }
+        }
+        timer.schedule(timerTask, 0, 1000)
     }
 }

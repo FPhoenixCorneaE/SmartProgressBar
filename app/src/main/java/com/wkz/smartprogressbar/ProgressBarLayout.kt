@@ -358,13 +358,13 @@ class ProgressBarLayout @JvmOverloads constructor(
     }
 
     fun setProgress(progress: Float) {
-        progressBar!!.progress = progress
+        progressBar!!.setProgress(progress)
     }
 
     var max: Float
-        get() = progressBar!!.max
+        get() = progressBar!!.getMax()
         set(max) {
-            progressBar!!.max = max * 10
+            progressBar!!.setMax(max * 10)
         }
 
     /**

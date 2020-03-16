@@ -197,7 +197,7 @@
         app:pbl_temperature_unit_text_color="#ff0000"
         app:pbl_temperature_unit_text_size="15"
         app:pbl_temperature_unit_top_margin="0dp"
-        app:pbl_time_hhmmss_text_size="20"
+        app:pbl_time_hhmmss_text_size="24"
         app:pbl_time_mmss_text_size="30"
         app:pbl_time_text="900"
         app:pbl_time_text_bold="true"

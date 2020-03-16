@@ -7,7 +7,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 
 /**
@@ -133,12 +132,12 @@ class SmartProgressBar @JvmOverloads constructor(
     /**
      * 进度最大值
      */
-    var max = DEFAULT_MAX
+    private var max = DEFAULT_MAX
 
     /**
      * 进度值
      */
-    var progress = 0f
+    private var progress = 0f
 
     /**
      * 进度文字是否显示百分号
@@ -187,7 +186,7 @@ class SmartProgressBar @JvmOverloads constructor(
      */
     private var mIsAnimated = true
     private var mAnimator: ValueAnimator? = null
-    private var mDuration = DEFAULT_ANIMATION_DURATION.toLong()
+    private var mDuration = DEFAULT_ANIMATION_DURATION
     private var mAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener? =
             null
 
@@ -316,7 +315,7 @@ class SmartProgressBar @JvmOverloads constructor(
             )
             mDuration = attributes.getInt(
                     R.styleable.SmartProgressBar_spb_animated_duration,
-                    DEFAULT_ANIMATION_DURATION
+                    DEFAULT_ANIMATION_DURATION.toInt()
             ).toLong()
             mShowShadow = attributes.getBoolean(R.styleable.SmartProgressBar_spb_show_shadow, false)
             if (max <= 0) {
@@ -413,6 +412,10 @@ class SmartProgressBar @JvmOverloads constructor(
      */
     private fun cancelAnimating() {
         mAnimator?.cancel()
+    }
+
+    private fun isAnimatorRunning(): Boolean {
+        return mAnimator?.isRunning ?: false
     }
 
     override fun onDetachedFromWindow() {
@@ -1044,8 +1047,15 @@ class SmartProgressBar @JvmOverloads constructor(
         return this
     }
 
+    fun getMax(): Float {
+        return max
+    }
+
     fun setProgress(progress: Float): SmartProgressBar {
-        when (val mLastProgress = progress) {
+        if (isAnimatorRunning()) {
+            return this
+        }
+        when (val mLastProgress = this.progress) {
             0f, max -> {
                 when {
                     progress > max -> {
@@ -1063,13 +1073,17 @@ class SmartProgressBar @JvmOverloads constructor(
             }
             else -> {
                 mAnimator = ValueAnimator.ofFloat(mLastProgress, progress)
-                mAnimator!!.interpolator = DecelerateInterpolator()
+                mAnimator!!.interpolator = LinearInterpolator()
                 mAnimator!!.duration = 2000
                 mAnimator!!.addUpdateListener(this)
                 mAnimator!!.start()
                 return this
             }
         }
+    }
+
+    fun getProgress(): Float {
+        return progress
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
@@ -1121,7 +1135,7 @@ class SmartProgressBar @JvmOverloads constructor(
         private const val DEFAULT_PERCENT_TEXT_SIZE = 15f
         private const val DEFAULT_BORDER_COLOR = Color.RED
         private const val DEFAULT_MAX = 100f
-        private const val DEFAULT_ANIMATION_DURATION = 1000
+        private const val DEFAULT_ANIMATION_DURATION = 1000L
     }
 
     init {
