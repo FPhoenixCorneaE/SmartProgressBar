@@ -7,6 +7,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 
 /**
@@ -1055,7 +1056,8 @@ class SmartProgressBar @JvmOverloads constructor(
         if (isAnimatorRunning()) {
             return this
         }
-        when (val mLastProgress = this.progress) {
+        val mLastProgress = this.progress
+        when (mLastProgress) {
             0f, max -> {
                 when {
                     progress > max -> {
@@ -1068,18 +1070,14 @@ class SmartProgressBar @JvmOverloads constructor(
                         this.progress = progress
                     }
                 }
-                post { this.postInvalidate() }
-                return this
-            }
-            else -> {
-                mAnimator = ValueAnimator.ofFloat(mLastProgress, progress)
-                mAnimator!!.interpolator = LinearInterpolator()
-                mAnimator!!.duration = 2000
-                mAnimator!!.addUpdateListener(this)
-                mAnimator!!.start()
-                return this
             }
         }
+        mAnimator = ValueAnimator.ofFloat(mLastProgress, progress)
+        mAnimator!!.interpolator = DecelerateInterpolator()
+        mAnimator!!.duration = 2000
+        mAnimator!!.addUpdateListener(this)
+        mAnimator!!.start()
+        return this
     }
 
     fun getProgress(): Float {
