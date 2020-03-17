@@ -1056,24 +1056,37 @@ class SmartProgressBar @JvmOverloads constructor(
         if (isAnimatorRunning()) {
             return this
         }
-        val lastProgress = this.progress
-        val targetProgress = when {
-            progress > max -> {
-                max
-            }
-            progress < 0 -> {
-                0f
+        when (val lastProgress = this.progress) {
+            0f, max -> {
+                when {
+                    progress >= max -> {
+                        this.progress = max
+                        post { this.postInvalidate() }
+                    }
+                    progress <= 0 -> {
+                        this.progress = 0f
+                        post { this.postInvalidate() }
+                    }
+                    else -> {
+                        this.progress = progress
+                        mAnimator = ValueAnimator.ofFloat(lastProgress, progress)
+                        mAnimator!!.interpolator = DecelerateInterpolator()
+                        mAnimator!!.duration = 2000
+                        mAnimator!!.addUpdateListener(this)
+                        mAnimator!!.start()
+                    }
+                }
+                return this
             }
             else -> {
-                progress
+                mAnimator = ValueAnimator.ofFloat(lastProgress, progress)
+                mAnimator!!.interpolator = DecelerateInterpolator()
+                mAnimator!!.duration = 2000
+                mAnimator!!.addUpdateListener(this)
+                mAnimator!!.start()
+                return this
             }
         }
-        mAnimator = ValueAnimator.ofFloat(lastProgress, targetProgress)
-        mAnimator!!.interpolator = DecelerateInterpolator()
-        mAnimator!!.duration = 2000
-        mAnimator!!.addUpdateListener(this)
-        mAnimator!!.start()
-        return this
     }
 
     fun getProgress(): Float {
