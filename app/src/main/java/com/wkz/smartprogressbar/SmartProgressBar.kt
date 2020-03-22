@@ -7,7 +7,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 
 /**
@@ -186,7 +185,8 @@ class SmartProgressBar @JvmOverloads constructor(
      * 是否执行动画
      */
     private var mIsAnimated = true
-    private var mAnimator: ValueAnimator? = null
+    private var mAnimator = ValueAnimator()
+    private var mProgressAnimator = ValueAnimator()
     private var mDuration = DEFAULT_ANIMATION_DURATION
     private var mAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener? =
             null
@@ -383,40 +383,36 @@ class SmartProgressBar @JvmOverloads constructor(
      * 开始动画
      */
     private fun startAnimating() {
-        if (mAnimator == null) {
-            mAnimator = ValueAnimator()
-            mAnimator = ValueAnimator.ofFloat(0f, progress)
-            mAnimator!!.repeatCount = 0
-            mAnimator!!.repeatMode = ValueAnimator.RESTART
-            mAnimator!!.interpolator = LinearInterpolator()
-            mAnimator!!.duration = mDuration
-            // 设置动画的回调
-            mAnimatorUpdateListener =
-                    ValueAnimator.AnimatorUpdateListener { animation ->
-                        progress = animation.animatedValue as Float
-                        post { this.postInvalidate() }
-                    }
-            mAnimator!!.addUpdateListener(mAnimatorUpdateListener)
+        mAnimator.setFloatValues(0f, progress)
+        mAnimator.repeatCount = 0
+        mAnimator.repeatMode = ValueAnimator.RESTART
+        mAnimator.interpolator = LinearInterpolator()
+        mAnimator.duration = mDuration
+        // 设置动画的回调
+        mAnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener { animation ->
+            progress = animation.animatedValue as Float
+            post { this.postInvalidate() }
         }
-        post { mAnimator!!.start() }
+        mAnimator.addUpdateListener(mAnimatorUpdateListener)
+        mAnimator.start()
     }
 
     /**
      * 停止动画
      */
     private fun pauseAnimating() {
-        mAnimator?.pause()
+        mAnimator.pause()
     }
 
     /**
      * 取消动画
      */
     private fun cancelAnimating() {
-        mAnimator?.cancel()
+        mAnimator.cancel()
     }
 
     private fun isAnimatorRunning(): Boolean {
-        return mAnimator?.isRunning ?: false
+        return mAnimator.isRunning
     }
 
     override fun onDetachedFromWindow() {
@@ -1052,7 +1048,7 @@ class SmartProgressBar @JvmOverloads constructor(
         return max
     }
 
-    fun setProgress(progress: Float): SmartProgressBar {
+    fun setProgress(progress: Float, duration: Long = 0): SmartProgressBar {
         if (isAnimatorRunning()) {
             return this
         }
@@ -1068,22 +1064,21 @@ class SmartProgressBar @JvmOverloads constructor(
                         post { this.postInvalidate() }
                     }
                     else -> {
-                        this.progress = progress
-                        mAnimator = ValueAnimator.ofFloat(lastProgress, progress)
-                        mAnimator!!.interpolator = DecelerateInterpolator()
-                        mAnimator!!.duration = 2000
-                        mAnimator!!.addUpdateListener(this)
-                        mAnimator!!.start()
+                        mProgressAnimator.setFloatValues(lastProgress, progress)
+                        mProgressAnimator.interpolator = LinearInterpolator()
+                        mProgressAnimator.duration = duration
+                        mProgressAnimator.addUpdateListener(this)
+                        mProgressAnimator.start()
                     }
                 }
                 return this
             }
             else -> {
-                mAnimator = ValueAnimator.ofFloat(lastProgress, progress)
-                mAnimator!!.interpolator = DecelerateInterpolator()
-                mAnimator!!.duration = 2000
-                mAnimator!!.addUpdateListener(this)
-                mAnimator!!.start()
+                mProgressAnimator.setFloatValues(lastProgress, progress)
+                mProgressAnimator.interpolator = LinearInterpolator()
+                mProgressAnimator.duration = duration
+                mProgressAnimator.addUpdateListener(this)
+                mProgressAnimator.start()
                 return this
             }
         }
@@ -1094,19 +1089,19 @@ class SmartProgressBar @JvmOverloads constructor(
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
-        post {
-            val animatedValue = animation.animatedValue as Float
-            progress = when {
-                animatedValue > max -> {
-                    max
-                }
-                animatedValue < 0 -> {
-                    0f
-                }
-                else -> {
-                    animatedValue
-                }
+        val animatedValue = animation.animatedValue as Float
+        progress = when {
+            animatedValue >= max -> {
+                max
             }
+            animatedValue <= 0 -> {
+                0f
+            }
+            else -> {
+                animatedValue
+            }
+        }
+        post {
             postInvalidate()
         }
     }
