@@ -1,6 +1,9 @@
 package com.wkz.smartprogressbar
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 
@@ -31,7 +34,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun initData() {
         mPblProgress?.mSmartProgressBar?.setIsAnimated(false)
-        mPblProgress?.max = 60f
-        mPblProgress?.setTimeText(true)
+        mPblProgress?.mBeginTemperature = 90f
+        mPblProgress?.max = 10f
+        mPblProgress?.setTemperatureText(false)
+        mPblProgress?.setProgressAnimatorListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                Log.i("onAnimationEnd", "onAnimationEnd")
+            }
+        })
     }
 }

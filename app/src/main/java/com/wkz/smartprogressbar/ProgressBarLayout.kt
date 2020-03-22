@@ -1,12 +1,12 @@
 package com.wkz.smartprogressbar
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -73,6 +73,8 @@ class ProgressBarLayout @JvmOverloads constructor(
     private var mShowTemperatureText = false
     private var mShowTimeText = false
     private var mShowShadow = true
+    var mBeginTemperature = 0f
+
     private fun initAttributes(
             context: Context,
             attrs: AttributeSet?
@@ -315,8 +317,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         parentLp.gravity = Gravity.CENTER
         addView(mRlTemperatureParent, parentLp)
 
-        // 设置温度文本
-        setTemperatureText(mTemperature.toFloat())
+        setTemperatureText()
     }
 
     private fun addTime(context: Context) {
@@ -333,6 +334,8 @@ class ProgressBarLayout @JvmOverloads constructor(
                     mTimeTextFontFamily
             )
         }
+
+        setTimeText()
     }
 
     fun setProgressBarBgColor(progressBarBgColor: Int) {
@@ -363,6 +366,10 @@ class ProgressBarLayout @JvmOverloads constructor(
         mSmartProgressBar.setProgress(progress, duration)
     }
 
+    fun setProgressAnimatorListener(mProgressAnimatorListener: Animator.AnimatorListener) {
+        mSmartProgressBar.setProgressAnimatorListener(mProgressAnimatorListener)
+    }
+
     var max: Float
         get() = mSmartProgressBar.getMax()
         set(max) {
@@ -371,6 +378,14 @@ class ProgressBarLayout @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        // 清空回调与消息
+        removeCallbacksAndMessages()
+    }
+
+    /**
+     * 清空回调与消息
+     */
+    private fun removeCallbacksAndMessages() {
         mScheduledExecutorService?.run {
             shutdownNow()
             null
@@ -380,37 +395,61 @@ class ProgressBarLayout @JvmOverloads constructor(
 
     /**
      * 设置温度
-     *
-     * @param temperature
      */
-    fun setTemperatureText(temperature: Float) {
-        setTemperatureText(temperature, false)
-    }
-
-    /**
-     * 设置温度
-     *
-     * @param temperature
-     */
-    fun setTemperatureText(
-            temperature: Float,
-            isFullReduction: Boolean
-    ) {
-        var temperature = temperature
+    fun setTemperatureText(isFullReduction: Boolean = false) {
+        removeCallbacksAndMessages()
         if (mTvTime != null) {
             mTvTime!!.visibility = View.GONE
         }
         if (mRlTemperatureParent != null) {
             mRlTemperatureParent!!.visibility = View.VISIBLE
-            if (temperature < 0) {
-                temperature = 0f
+
+            // 更新温度
+            var temperature = when {
+                isFullReduction -> max + 1
+                else -> -1f
             }
-            mTvTemperature?.text = temperature.toInt().toString()
-            if (isFullReduction) {
-                setProgress(max - temperature)
-            } else {
-                setProgress(temperature)
+            mScheduledExecutorService = Executors.newScheduledThreadPool(1)
+            mScheduledExecutorService!!.scheduleAtFixedRate({
+                when {
+                    isFullReduction -> temperature--
+                    else -> temperature++
+                }
+                when {
+                    temperature > max || temperature < 0 -> {
+                        removeCallbacksAndMessages()
+                    }
+                    else -> {
+                        val message = Message.obtain()
+                        val data = Bundle()
+                        message.what = ProgressHandler.MSG_TEMPERATURE
+                        data.putFloat(ProgressHandler.DATA_TEMPERATURE, temperature)
+                        message.data = data
+                        mProgressHandler.sendMessage(message)
+                    }
+                }
+            }, 0, 1, TimeUnit.SECONDS)
+
+            // 更新圆环进度
+            val progress = when {
+                isFullReduction -> 0
+                else -> max.toLong()
             }
+            when {
+                isFullReduction -> {
+                    setProgress(max - 0.01f)
+                }
+                else -> {
+                    setProgress(0.01f)
+                }
+            }
+            val message = Message.obtain()
+            val data = Bundle()
+            data.putLong(ProgressHandler.DATA_DURATION, max.toLong() * 1000)
+            data.putFloat(ProgressHandler.DATA_PROGRESS, progress.toFloat())
+            message.what = ProgressHandler.MSG_PROGRESS
+            message.data = data
+            mProgressHandler.sendMessageDelayed(message, 1000)
         } else {
             addTemperature(context)
         }
@@ -420,6 +459,7 @@ class ProgressBarLayout @JvmOverloads constructor(
      * 设置时间,单位"秒"
      */
     fun setTimeText(isFullReduction: Boolean = true) {
+        removeCallbacksAndMessages()
         if (mRlTemperatureParent != null) {
             mRlTemperatureParent!!.visibility = View.GONE
         }
@@ -431,17 +471,15 @@ class ProgressBarLayout @JvmOverloads constructor(
                 isFullReduction -> (max + 1).toLong()
                 else -> -1
             }
-            mScheduledExecutorService?.shutdownNow()
             mScheduledExecutorService = Executors.newScheduledThreadPool(1)
             mScheduledExecutorService!!.scheduleAtFixedRate({
-                Log.i("MSG_TIME", "time---${time}")
                 when {
                     isFullReduction -> time--
                     else -> time++
                 }
                 when {
                     time > max || time < 0 -> {
-                        mScheduledExecutorService?.shutdown()
+                        removeCallbacksAndMessages()
                     }
                     else -> {
                         val message = Message.obtain()
@@ -497,7 +535,10 @@ class ProgressBarLayout @JvmOverloads constructor(
             super.handleMessage(msg)
             when (msg.what) {
                 MSG_TEMPERATURE -> {
-
+                    val temperature = msg.data.getFloat(DATA_TEMPERATURE)
+                    progressBarLayoutReference?.apply {
+                        mTvTemperature!!.text = (mBeginTemperature + temperature).toInt().toString()
+                    }
                 }
                 MSG_TIME -> {
                     val time = msg.data.getLong(DATA_TIME)

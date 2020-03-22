@@ -1,5 +1,7 @@
 package com.wkz.smartprogressbar
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
@@ -186,10 +188,11 @@ class SmartProgressBar @JvmOverloads constructor(
      */
     private var mIsAnimated = true
     private var mAnimator = ValueAnimator()
-    private var mProgressAnimator = ValueAnimator()
     private var mDuration = DEFAULT_ANIMATION_DURATION
     private var mAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener? =
             null
+    private var mProgressAnimator = ValueAnimator()
+    private var mProgressAnimatorListener: Animator.AnimatorListener = object : AnimatorListenerAdapter() {}
 
     /**
      * 进度阴影
@@ -1039,13 +1042,14 @@ class SmartProgressBar @JvmOverloads constructor(
         return this
     }
 
-    fun setMax(max: Float): SmartProgressBar {
-        this.max = max
+    fun setProgressAnimatorListener(mProgressAnimatorListener: Animator.AnimatorListener): SmartProgressBar {
+        this.mProgressAnimatorListener = mProgressAnimatorListener
         return this
     }
 
-    fun getMax(): Float {
-        return max
+    fun setMax(max: Float): SmartProgressBar {
+        this.max = max
+        return this
     }
 
     fun setProgress(progress: Float, duration: Long = 0): SmartProgressBar {
@@ -1064,28 +1068,38 @@ class SmartProgressBar @JvmOverloads constructor(
                         post { this.postInvalidate() }
                     }
                     else -> {
-                        mProgressAnimator.setFloatValues(lastProgress, progress)
-                        mProgressAnimator.interpolator = LinearInterpolator()
-                        mProgressAnimator.duration = duration
-                        mProgressAnimator.addUpdateListener(this)
-                        mProgressAnimator.start()
+                        startProgressAnimating(lastProgress, progress, duration)
                     }
                 }
                 return this
             }
             else -> {
-                mProgressAnimator.setFloatValues(lastProgress, progress)
-                mProgressAnimator.interpolator = LinearInterpolator()
-                mProgressAnimator.duration = duration
-                mProgressAnimator.addUpdateListener(this)
-                mProgressAnimator.start()
+                startProgressAnimating(lastProgress, progress, duration)
                 return this
             }
         }
     }
 
+    fun getMax(): Float {
+        return max
+    }
+
     fun getProgress(): Float {
         return progress
+    }
+
+    /**
+     * 开始进度动画
+     */
+    private fun startProgressAnimating(lastProgress: Float, progress: Float, duration: Long) {
+        mProgressAnimator.setFloatValues(lastProgress, progress)
+        mProgressAnimator.interpolator = LinearInterpolator()
+        mProgressAnimator.duration = duration
+        mProgressAnimator.removeAllUpdateListeners()
+        mProgressAnimator.removeAllListeners()
+        mProgressAnimator.addUpdateListener(this)
+        mProgressAnimator.addListener(mProgressAnimatorListener)
+        mProgressAnimator.start()
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
