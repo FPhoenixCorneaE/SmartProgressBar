@@ -1,4 +1,4 @@
-package com.wkz.smartprogressbar
+package com.wkz.fphoenixcorneae
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter

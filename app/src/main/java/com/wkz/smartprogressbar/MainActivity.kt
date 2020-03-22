@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.wkz.fphoenixcorneae.ProgressBarLayout
+import com.wkz.fphoenixcorneae.SmartProgressBar
 
 class MainActivity : AppCompatActivity() {
     private var mSpbHorizontal: SmartProgressBar? = null

@@ -1,4 +1,4 @@
-package com.wkz.smartprogressbar
+package com.wkz.fphoenixcorneae
 
 import android.animation.Animator
 import android.annotation.SuppressLint
@@ -13,7 +13,7 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import com.wkz.smartprogressbar.SmartProgressBar.ShapeStyle
+import com.wkz.fphoenixcorneae.SmartProgressBar.ShapeStyle
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
@@ -166,7 +166,7 @@ class ProgressBarLayout @JvmOverloads constructor(
                 )
                 mTemperatureTextFontFamily = attributes.getResourceId(
                         R.styleable.ProgressBarLayout_pbl_temperature_text_fontfamily,
-                        R.font.arial
+                        0
                 )
                 mTemperatureUnitTextSize = attributes.getFloat(
                         R.styleable.ProgressBarLayout_pbl_temperature_unit_text_size,
@@ -226,7 +226,7 @@ class ProgressBarLayout @JvmOverloads constructor(
                 )
                 mTimeTextFontFamily = attributes.getResourceId(
                         R.styleable.ProgressBarLayout_pbl_temperature_text_fontfamily,
-                        R.font.arial
+                        0
                 )
             } finally {
                 attributes.recycle()
