@@ -74,6 +74,7 @@ class ProgressBarLayout @JvmOverloads constructor(
     private var mShowTimeText = false
     private var mShowShadow = true
     var mBeginTemperature = 0f
+    var mEndTemperature = 0f
 
     private fun initAttributes(
             context: Context,
@@ -249,7 +250,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         progressLp.gravity = Gravity.CENTER
         mSmartProgressBar = SmartProgressBar(context)
         mSmartProgressBar.setShapeStyle(ShapeStyle.RING)
-        mSmartProgressBar.setIsAnimated(true)
+        mSmartProgressBar.setIsAnimated(false)
         mSmartProgressBar.setProgressBarBgGradient(mProgressBarBgGradient)
         mSmartProgressBar.setProgressBarBgAlpha(mProgressBarBgAlpha)
         mSmartProgressBar.setProgressColorsResId(mProgressColorsResId)
@@ -317,7 +318,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         parentLp.gravity = Gravity.CENTER
         addView(mRlTemperatureParent, parentLp)
 
-        setTemperatureText()
+        setTemperatureText(mBeginTemperature, mEndTemperature)
     }
 
     private fun addTime(context: Context) {
@@ -335,7 +336,7 @@ class ProgressBarLayout @JvmOverloads constructor(
             )
         }
 
-        setTimeText()
+        setTimeText(max.toLong())
     }
 
     fun setProgressBarBgColor(progressBarBgColor: Int) {
@@ -395,8 +396,19 @@ class ProgressBarLayout @JvmOverloads constructor(
 
     /**
      * 设置温度
+     * @param beginTemperature 开始温度
+     * @param endTemperature   结束温度
      */
-    fun setTemperatureText(isFullReduction: Boolean = false) {
+    fun setTemperatureText(beginTemperature: Float, endTemperature: Float) {
+        this.mBeginTemperature = beginTemperature
+        this.mEndTemperature = endTemperature
+        val isClockwise = mEndTemperature >= mBeginTemperature
+        this.max=
+            when (isClockwise) {
+                true -> mEndTemperature - mBeginTemperature
+                else -> 100f
+            }
+
         removeCallbacksAndMessages()
         if (mTvTime != null) {
             mTvTime!!.visibility = View.GONE
@@ -404,52 +416,51 @@ class ProgressBarLayout @JvmOverloads constructor(
         if (mRlTemperatureParent != null) {
             mRlTemperatureParent!!.visibility = View.VISIBLE
 
-            // 更新温度
-            var temperature = when {
-                isFullReduction -> max + 1
-                else -> -1f
+            when (isClockwise && max > 0) {
+                true -> {
+                    // 更新温度
+                    var diffTemperature = -1f
+                    mScheduledExecutorService = Executors.newScheduledThreadPool(1)
+                    mScheduledExecutorService!!.scheduleAtFixedRate({
+                        diffTemperature++
+                        when {
+                            diffTemperature > max || diffTemperature < 0 -> {
+                                removeCallbacksAndMessages()
+                            }
+                            else -> {
+                                val message = Message.obtain()
+                                val data = Bundle()
+                                message.what = ProgressHandler.MSG_TEMPERATURE
+                                data.putFloat(ProgressHandler.DATA_TEMPERATURE, mBeginTemperature + diffTemperature)
+                                message.data = data
+                                mProgressHandler.sendMessage(message)
+                            }
+                        }
+                    }, 0, 1, TimeUnit.SECONDS)
+                }
             }
-            mScheduledExecutorService = Executors.newScheduledThreadPool(1)
-            mScheduledExecutorService!!.scheduleAtFixedRate({
-                when {
-                    isFullReduction -> temperature--
-                    else -> temperature++
-                }
-                when {
-                    temperature > max || temperature < 0 -> {
-                        removeCallbacksAndMessages()
-                    }
-                    else -> {
-                        val message = Message.obtain()
-                        val data = Bundle()
-                        message.what = ProgressHandler.MSG_TEMPERATURE
-                        data.putFloat(ProgressHandler.DATA_TEMPERATURE, temperature)
-                        message.data = data
-                        mProgressHandler.sendMessage(message)
-                    }
-                }
-            }, 0, 1, TimeUnit.SECONDS)
 
             // 更新圆环进度
-            val progress = when {
-                isFullReduction -> 0
-                else -> max.toLong()
-            }
-            when {
-                isFullReduction -> {
-                    setProgress(max - 0.01f)
+            val progress = max
+            when (isClockwise && max > 0) {
+                true -> {
+                    mSmartProgressBar.setIsAnimated(false)
+                    setProgress(0.01f)
+                    val message = Message.obtain()
+                    val data = Bundle()
+                    data.putLong(ProgressHandler.DATA_DURATION, max.toLong() * 1000)
+                    data.putFloat(ProgressHandler.DATA_PROGRESS, progress)
+                    message.what = ProgressHandler.MSG_PROGRESS
+                    message.data = data
+                    mProgressHandler.sendMessageDelayed(message, 1000)
                 }
                 else -> {
-                    setProgress(0.01f)
+                    mSmartProgressBar.setIsAnimated(true)
+                    setProgress(progress)
+                    // 更新温度
+                    mTvTemperature!!.text = mBeginTemperature.toInt().toString()
                 }
             }
-            val message = Message.obtain()
-            val data = Bundle()
-            data.putLong(ProgressHandler.DATA_DURATION, max.toLong() * 1000)
-            data.putFloat(ProgressHandler.DATA_PROGRESS, progress.toFloat())
-            message.what = ProgressHandler.MSG_PROGRESS
-            message.data = data
-            mProgressHandler.sendMessageDelayed(message, 1000)
         } else {
             addTemperature(context)
         }
@@ -457,8 +468,10 @@ class ProgressBarLayout @JvmOverloads constructor(
 
     /**
      * 设置时间,单位"秒"
+     * @param secondTime 时长
      */
-    fun setTimeText(isFullReduction: Boolean = true) {
+    fun setTimeText(secondTime: Long, isFullReduction: Boolean = true) {
+        this.max = secondTime.toFloat()
         removeCallbacksAndMessages()
         if (mRlTemperatureParent != null) {
             mRlTemperatureParent!!.visibility = View.GONE
@@ -499,9 +512,11 @@ class ProgressBarLayout @JvmOverloads constructor(
             }
             when {
                 isFullReduction -> {
+                    mSmartProgressBar.setIsAnimated(false)
                     setProgress(max - 0.01f)
                 }
                 else -> {
+                    mSmartProgressBar.setIsAnimated(false)
                     setProgress(0.01f)
                 }
             }
@@ -537,7 +552,7 @@ class ProgressBarLayout @JvmOverloads constructor(
                 MSG_TEMPERATURE -> {
                     val temperature = msg.data.getFloat(DATA_TEMPERATURE)
                     progressBarLayoutReference?.apply {
-                        mTvTemperature!!.text = (mBeginTemperature + temperature).toInt().toString()
+                        mTvTemperature!!.text = temperature.toInt().toString()
                     }
                 }
                 MSG_TIME -> {
