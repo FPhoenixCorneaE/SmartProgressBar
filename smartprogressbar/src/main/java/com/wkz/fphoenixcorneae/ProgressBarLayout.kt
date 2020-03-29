@@ -376,6 +376,27 @@ class ProgressBarLayout @JvmOverloads constructor(
             mSmartProgressBar.setMax(max)
         }
 
+    /**
+     * 暂停进度动画
+     */
+    fun pauseProgressAnimation() {
+        mSmartProgressBar.pauseProgressAnimation()
+    }
+
+    /**
+     * 恢复进度动画
+     */
+    fun resumeProgressAnimation() {
+        mSmartProgressBar.resumeProgressAnimation()
+    }
+
+    /**
+     * 取消进度动画
+     */
+    fun cancelProgressAnimation() {
+        mSmartProgressBar.cancelProgressAnimation()
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         // 清空回调与消息

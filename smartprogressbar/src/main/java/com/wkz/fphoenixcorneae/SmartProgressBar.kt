@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.animation.doOnCancel
 
 /**
  * 自定义的进度条
@@ -1068,13 +1069,13 @@ class SmartProgressBar @JvmOverloads constructor(
                         post { this.postInvalidate() }
                     }
                     else -> {
-                        startProgressAnimating(lastProgress, progress, duration)
+                        startProgressAnimation(lastProgress, progress, duration)
                     }
                 }
                 return this
             }
             else -> {
-                startProgressAnimating(lastProgress, progress, duration)
+                startProgressAnimation(lastProgress, progress, duration)
                 return this
             }
         }
@@ -1091,7 +1092,7 @@ class SmartProgressBar @JvmOverloads constructor(
     /**
      * 开始进度动画
      */
-    private fun startProgressAnimating(lastProgress: Float, progress: Float, duration: Long) {
+    private fun startProgressAnimation(lastProgress: Float, progress: Float, duration: Long) {
         mProgressAnimator.setFloatValues(lastProgress, progress)
         mProgressAnimator.interpolator = LinearInterpolator()
         mProgressAnimator.duration = duration
@@ -1100,6 +1101,27 @@ class SmartProgressBar @JvmOverloads constructor(
         mProgressAnimator.addUpdateListener(this)
         mProgressAnimator.addListener(mProgressAnimatorListener)
         mProgressAnimator.start()
+    }
+
+    /**
+     * 暂停进度动画
+     */
+    fun pauseProgressAnimation() {
+        mProgressAnimator.pause()
+    }
+
+    /**
+     * 恢复进度动画
+     */
+    fun resumeProgressAnimation() {
+        mProgressAnimator.resume()
+    }
+
+    /**
+     * 取消进度动画
+     */
+    fun cancelProgressAnimation() {
+        mProgressAnimator.cancel()
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
