@@ -18,9 +18,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         pblProgress.mSmartProgressBar.setIsAnimated(false)
-        pblProgress.mBeginTemperature = 90f
+        val beginTemperature = 90f
+        val endTemperature = 140f
         pblProgress.max = 10f
-        pblProgress.setTemperatureText(false)
+        pblProgress.setTemperatureText(beginTemperature, endTemperature)
         pblProgress.setProgressAnimatorListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)
