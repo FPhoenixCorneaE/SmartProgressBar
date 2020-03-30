@@ -194,7 +194,7 @@
             app:pbl_show_shadow="true"
             app:pbl_show_temperature_text="false"
             app:pbl_show_time_text="true"
-            app:pbl_temperature_text="38"
+            app:pbl_temperature_text="0"
             app:pbl_temperature_text_bold="true"
             app:pbl_temperature_text_color="#00ff00"
             app:pbl_temperature_text_fontfamily="@font/arial"
@@ -212,39 +212,54 @@
             app:pbl_time_text_fontfamily="@font/arial" />
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/btnShowTemperatureText"
             android:layout_width="100dp"
-            android:layout_height="48dp"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
             android:background="@null"
             android:gravity="center"
-            android:text="cancel"
+            android:text="显示温度"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="17sp"
-            app:layout_constraintBottom_toBottomOf="@+id/pblProgress"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText" />
 
         <Button
-            android:id="@+id/btnResume"
+            android:id="@+id/btnShowTimeText"
             android:layout_width="100dp"
-            android:layout_height="48dp"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
             android:background="@null"
             android:gravity="center"
-            android:text="resume"
+            android:text="显示时间"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="17sp"
-            app:layout_constraintBottom_toTopOf="@+id/btnCancel"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnShowTemperatureText"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btnTurnDirection"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:background="@null"
+            android:gravity="center"
+            android:text="转换方向"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnShowTimeText"
             tools:ignore="HardcodedText" />
 
         <Button
             android:id="@+id/btnPause"
             android:layout_width="100dp"
-            android:layout_height="48dp"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
             android:background="@null"
             android:gravity="center"
@@ -252,8 +267,38 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="17sp"
-            app:layout_constraintBottom_toTopOf="@+id/btnResume"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnTurnDirection"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btnResume"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:background="@null"
+            android:gravity="center"
+            android:text="resume"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnPause"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:background="@null"
+            android:gravity="center"
+            android:text="cancel"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnResume"
             tools:ignore="HardcodedText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
