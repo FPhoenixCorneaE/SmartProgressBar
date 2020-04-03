@@ -232,7 +232,7 @@ class ProgressBarLayout @JvmOverloads constructor(
             addTemperature(context, 0f, mProgressMax)
         }
         if (mShowTimeText) {
-            addTime(context)
+            addTime(context, mTime.toLong())
         }
     }
 
@@ -311,7 +311,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         setTemperatureText(beginTemperature, endTemperature)
     }
 
-    private fun addTime(context: Context) {
+    private fun addTime(context: Context, secondTotalTime: Long) {
         val timeLp =
                 LayoutParams(-2, -2)
         timeLp.gravity = Gravity.CENTER
@@ -326,7 +326,7 @@ class ProgressBarLayout @JvmOverloads constructor(
             )
         }
 
-        setTimeText(mTime.toLong(), false)
+        setTimeText(secondTotalTime)
     }
 
     fun setProgressBarBgColor(progressBarBgColor: Int) {
@@ -508,7 +508,7 @@ class ProgressBarLayout @JvmOverloads constructor(
             mSmartProgressBar.setIsAnimated(false)
             setProgress(progress, max.toLong() * 1000)
         } else {
-            addTime(context)
+            addTime(context, secondTotalTime)
         }
     }
 

@@ -1213,6 +1213,8 @@ class SmartProgressBar @JvmOverloads constructor(
      * 取消进度动画
      */
     fun cancelProgressAnimation() {
+        mProgressAnimator.removeAllUpdateListeners()
+        mProgressAnimator.removeAllListeners()
         mProgressAnimator.cancel()
     }
 
