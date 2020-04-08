@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:padding="10dp">
 
-    <com.wkz.fphoenixcorneae.SmartProgressBar
+    <com.fphoenixcorneae.progressbar.SmartProgressBar
         android:id="@+id/spb_horizontal"
         android:layout_width="match_parent"
         android:layout_height="20dp"
@@ -42,7 +42,7 @@
         android:gravity="center"
         android:visibility="visible">
 
-        <com.wkz.fphoenixcorneae.SmartProgressBar
+        <com.fphoenixcorneae.progressbar.SmartProgressBar
             android:id="@+id/spb_ring_1"
             android:layout_width="150dp"
             android:layout_height="150dp"
@@ -64,7 +64,7 @@
             app:spb_show_percent_sign="true"
             app:spb_show_percent_text="true" />
 
-        <com.wkz.fphoenixcorneae.SmartProgressBar
+        <com.fphoenixcorneae.progressbar.SmartProgressBar
             android:id="@+id/spb_vertical"
             android:layout_width="20dp"
             android:layout_height="200dp"
@@ -90,7 +90,7 @@
             app:spb_top_left_radius="20dp"
             app:spb_top_right_radius="20dp" />
 
-        <com.wkz.fphoenixcorneae.SmartProgressBar
+        <com.fphoenixcorneae.progressbar.SmartProgressBar
             android:id="@+id/spb_ring_2"
             android:layout_width="150dp"
             android:layout_height="150dp"
@@ -121,7 +121,7 @@
         android:gravity="center"
         android:visibility="visible">
 
-        <com.wkz.fphoenixcorneae.SmartProgressBar
+        <com.fphoenixcorneae.progressbar.SmartProgressBar
             android:id="@+id/spb_sector_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
             app:spb_show_percent_sign="true"
             app:spb_show_percent_text="true" />
 
-        <com.wkz.fphoenixcorneae.SmartProgressBar
+        <com.fphoenixcorneae.progressbar.SmartProgressBar
             android:id="@+id/spb_sector_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -170,7 +170,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.wkz.fphoenixcorneae.ProgressBarLayout
+        <com.fphoenixcorneae.progressbar.ProgressBarLayout
             android:id="@+id/pblProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

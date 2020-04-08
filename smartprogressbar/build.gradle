@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.github.dcendents.android-maven'
+group = 'com.github.FPhoenixCorneaE'
 
 android {
     compileSdkVersion 29
@@ -37,11 +38,29 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.2.0'
 }
 
-publish {
-    userOrg = 'fphoenixcorneae'
-    groupId = 'com.fphoenixcorneae'
-    artifactId = 'SmartProgressBar'
-    publishVersion = '1.0.1'
-    desc = '漂亮的进度条，如丝般顺滑，样式风格有水平、竖直、圆环、扇形......'
-    website = 'https://github.com/FPhoenixCorneaE/SmartProgressBar'
+//添加以下配置，否则上传后的jar包看不到注释-------------------------------------------------------------
+
+// 指定编码
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+// 打包源码
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    failOnError false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+// 制作文档(Javadoc)
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives sourcesJar
+    archives javadocJar
 }

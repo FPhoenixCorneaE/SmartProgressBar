@@ -1,4 +1,4 @@
-package com.wkz.fphoenixcorneae
+package com.fphoenixcorneae.progressbar
 
 import android.animation.Animator
 import android.animation.ValueAnimator
@@ -12,7 +12,7 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
-import com.wkz.fphoenixcorneae.SmartProgressBar.ShapeStyle
+import com.fphoenixcorneae.progressbar.SmartProgressBar.ShapeStyle
 import java.text.SimpleDateFormat
 import java.util.*
 

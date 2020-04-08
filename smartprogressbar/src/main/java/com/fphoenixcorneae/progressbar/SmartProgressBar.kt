@@ -1,4 +1,4 @@
-package com.wkz.fphoenixcorneae
+package com.fphoenixcorneae.progressbar
 
 import android.animation.Animator
 import android.animation.ValueAnimator
