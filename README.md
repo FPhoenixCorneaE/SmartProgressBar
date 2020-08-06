@@ -8,10 +8,29 @@
 
 -----------------------------
 
+How to include it in your project:
+--------------
+**Step 1.** Add the JitPack repository to your build file
+```groovy
+allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+
+**Step 2.** Add the dependency
+```groovy
+dependencies {
+	        implementation 'com.github.FPhoenixCorneaE:SmartProgressBar:1.0.2'
+	}
+```
+
 xml中使用
 --------------
 `水平样式进度条`
-```java
+```xml
 <com.wkz.smartprogressbar.SmartProgressBar
         android:id="@+id/spb_horizontal"
         android:layout_width="match_parent"
@@ -39,7 +58,7 @@ xml中使用
 ```
 
 `竖直样式进度条`
-```java
+```xml
 <com.wkz.smartprogressbar.SmartProgressBar
         android:id="@+id/spb_vertical"
         android:layout_width="20dp"
@@ -67,7 +86,7 @@ xml中使用
 ```
 
 `圆环样式进度条`
-```java
+```xml
 <com.wkz.smartprogressbar.SmartProgressBar
             android:id="@+id/spb_ring_1"
             android:layout_width="150dp"
@@ -92,7 +111,7 @@ xml中使用
 ```
 
 `扇形样式进度条`
-```java
+```xml
 <com.wkz.smartprogressbar.SmartProgressBar
             android:id="@+id/spb_ring_2"
             android:layout_width="150dp"
