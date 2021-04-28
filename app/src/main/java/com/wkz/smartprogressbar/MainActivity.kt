@@ -21,9 +21,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        pblProgress.addProgressAnimatorUpdateListener(ValueAnimator.AnimatorUpdateListener {
+        pblProgress.addProgressAnimatorUpdateListener {
 
-        })
+        }
         pblProgress.addProgressAnimatorListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)

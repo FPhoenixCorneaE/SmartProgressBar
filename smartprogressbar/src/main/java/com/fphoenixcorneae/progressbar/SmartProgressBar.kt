@@ -440,19 +440,16 @@ class SmartProgressBar @JvmOverloads constructor(
         val widthSpecSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightSpecMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSpecSize = MeasureSpec.getSize(heightMeasureSpec)
-        val width: Int
-        val height: Int
-        width = when (widthSpecMode) {
+        val (width, height) = when (widthSpecMode) {
             MeasureSpec.AT_MOST, MeasureSpec.UNSPECIFIED -> {
-                dp2px(context, DEFAULT_WIDTH)
+                dp2px(DEFAULT_WIDTH)
             }
             else -> {
                 widthSpecSize
             }
-        }
-        height = when (heightSpecMode) {
+        } to when (heightSpecMode) {
             MeasureSpec.AT_MOST, MeasureSpec.UNSPECIFIED -> {
-                dp2px(context, DEFAULT_HEIGHT)
+                dp2px(DEFAULT_HEIGHT)
             }
             else -> {
                 heightSpecSize
@@ -1242,7 +1239,7 @@ class SmartProgressBar @JvmOverloads constructor(
      * @param dpValue dp值
      * @return px值
      */
-    private fun dp2px(context: Context, dpValue: Float): Int {
+    private fun dp2px(dpValue: Float): Int {
         val scale = context.resources.displayMetrics.density
         return (dpValue * scale + 0.5f).toInt()
     }
