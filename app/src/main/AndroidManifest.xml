@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
-    package="com.wkz.smartprogressbar">
+    package="com.fphoenixcorneae.smartprogressbar">
 
     <dist:module dist:instant="true" />
 
@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.wkz.smartprogressbar.MainActivity"
+            android:name="com.fphoenixcorneae.smartprogressbar.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

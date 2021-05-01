@@ -12,41 +12,30 @@ import android.view.animation.LinearInterpolator
 import java.util.*
 
 /**
- * 自定义的进度条
- * 样式风格有水平、竖直、圆环、扇形、......
- *
- * @author wkz
+ * @desc：自定义的进度条，样式风格有：水平、竖直、圆环、扇形......
  * @date 2019/05/05 21:23
  */
 class SmartProgressBar @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr),
-        ValueAnimator.AnimatorUpdateListener {
+) : View(context, attrs, defStyleAttr), ValueAnimator.AnimatorUpdateListener {
+
+    /**
+     * 形状样式：默认样式为水平样式
+     * [ShapeStyle.HORIZONTAL] 水平样式
+     * [ShapeStyle.VERTICAL]   竖直样式
+     * [ShapeStyle.RING]       圆环样式
+     * [ShapeStyle.SECTOR]     扇形样式
+     */
     @Target(AnnotationTarget.FIELD)
     @kotlin.annotation.Retention(AnnotationRetention.BINARY)
     annotation class ShapeStyle {
         companion object {
-            /**
-             * 水平样式
-             */
-            var HORIZONTAL = 0
-
-            /**
-             * 竖直样式
-             */
-            var VERTICAL = 1
-
-            /**
-             * 圆环样式
-             */
-            var RING = 2
-
-            /**
-             * 扇形样式
-             */
-            var SECTOR = 3
+            const val HORIZONTAL = 0
+            const val VERTICAL = 1
+            const val RING = 2
+            const val SECTOR = 3
         }
     }
 
@@ -134,12 +123,12 @@ class SmartProgressBar @JvmOverloads constructor(
     /**
      * 进度最大值
      */
-    private var max = DEFAULT_MAX
+    private var mMaxProgress = DEFAULT_MAX
 
     /**
      * 进度值
      */
-    private var progress = 0f
+    private var mProgress = 0f
 
     /**
      * 进度文字是否显示百分号
@@ -189,8 +178,7 @@ class SmartProgressBar @JvmOverloads constructor(
     private var mIsAnimated = true
     private var mAnimator = ValueAnimator()
     private var mDuration = DEFAULT_ANIMATION_DURATION
-    private var mAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener? =
-            null
+    private var mAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener? = null
     private var mProgressAnimator = ValueAnimator()
     private var mProgressAnimatorListener = ArrayList<Animator.AnimatorListener>()
     private var mProgressAnimatorUpdateListener = ArrayList<ValueAnimator.AnimatorUpdateListener>()
@@ -201,7 +189,7 @@ class SmartProgressBar @JvmOverloads constructor(
     private var mShadowPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val mShadowColor = Color.parseColor("#2b1a14")
     private val mShadowColor2 = Color.parseColor("#102b1a14")
-    var mShowShadow = true
+    private var mShowShadow = true
 
     /**
      * 矩形
@@ -214,9 +202,9 @@ class SmartProgressBar @JvmOverloads constructor(
     /**
      * 初始化自定义属性
      */
-    private fun initAttributes(
+    private fun initAttrs(
             context: Context,
-            attrs: AttributeSet,
+            attrs: AttributeSet?,
             defStyleAttr: Int
     ) {
         val attributes = context.theme.obtainStyledAttributes(
@@ -226,12 +214,14 @@ class SmartProgressBar @JvmOverloads constructor(
                 0
         )
         try {
-            max = attributes.getFloat(
+            mMaxProgress = attributes.getFloat(
                     R.styleable.SmartProgressBar_spb_max,
                     DEFAULT_MAX
             )
-            progress =
-                    attributes.getFloat(R.styleable.SmartProgressBar_spb_progress, 0f)
+            mProgress = attributes.getFloat(
+                    R.styleable.SmartProgressBar_spb_progress,
+                    0f
+            )
             mProgressStartColor = attributes.getColor(
                     R.styleable.SmartProgressBar_spb_progress_start_color,
                     DEFAULT_PROGRESS_COLOR
@@ -312,8 +302,10 @@ class SmartProgressBar @JvmOverloads constructor(
                     R.styleable.SmartProgressBar_spb_bottom_right_radius,
                     0f
             )
-            mShapeStyle =
-                    attributes.getInt(R.styleable.SmartProgressBar_spb_shape_style, 0)
+            mShapeStyle = attributes.getInt(
+                    R.styleable.SmartProgressBar_spb_shape_style,
+                    0
+            )
             mIsAnimated = attributes.getBoolean(
                     R.styleable.SmartProgressBar_spb_animated,
                     true
@@ -322,19 +314,17 @@ class SmartProgressBar @JvmOverloads constructor(
                     R.styleable.SmartProgressBar_spb_animated_duration,
                     DEFAULT_ANIMATION_DURATION.toInt()
             ).toLong()
-            mShowShadow = attributes.getBoolean(R.styleable.SmartProgressBar_spb_show_shadow, false)
-            when {
-                max <= 0 -> {
-                    max = DEFAULT_MAX
-                }
+            mShowShadow = attributes.getBoolean(
+                    R.styleable.SmartProgressBar_spb_show_shadow,
+                    false
+            )
+            if (mMaxProgress <= 0) {
+                mMaxProgress = DEFAULT_MAX
             }
-            when {
-                progress > max -> {
-                    progress = max
-                }
-                progress < 0 -> {
-                    progress = 0f
-                }
+            if (mProgress > mMaxProgress) {
+                mProgress = mMaxProgress
+            } else if (mProgress < 0) {
+                mProgress = 0f
             }
         } finally {
             attributes.recycle()
@@ -365,30 +355,28 @@ class SmartProgressBar @JvmOverloads constructor(
         mPercentTextPaint.textSize = mPercentTextSize
 
         /*若是设置了radius属性，四个圆角属性值以radius属性值为准*/
-        when {
-            mRadius > 0 -> {
-                mBottomRightRadius = mRadius
-                mBottomLeftRadius = mBottomRightRadius
-                mTopRightRadius = mBottomLeftRadius
-                mTopLeftRadius = mTopRightRadius
-            }
+        if (mRadius > 0) {
+            mBottomRightRadius = mRadius
+            mBottomLeftRadius = mRadius
+            mTopRightRadius = mRadius
+            mTopLeftRadius = mRadius
         }
 
         /*圆角的半径，依次为左上角xy半径，右上角，右下角，左下角*/
         mRadii = floatArrayOf(
-                mTopLeftRadius, mTopLeftRadius, mTopRightRadius, mTopRightRadius,
-                mBottomRightRadius, mBottomRightRadius, mBottomLeftRadius, mBottomLeftRadius
+                mTopLeftRadius, mTopLeftRadius,
+                mTopRightRadius, mTopRightRadius,
+                mBottomRightRadius, mBottomRightRadius,
+                mBottomLeftRadius, mBottomLeftRadius
         )
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         // 是否执行动画
-        when {
-            mIsAnimated -> {
-                // 开始动画
-                startAnimating()
-            }
+        if (mIsAnimated) {
+            // 开始动画
+            startAnimating()
         }
     }
 
@@ -403,18 +391,20 @@ class SmartProgressBar @JvmOverloads constructor(
      * 开始动画
      */
     private fun startAnimating() {
-        mAnimator.setFloatValues(0f, progress)
-        mAnimator.repeatCount = 0
-        mAnimator.repeatMode = ValueAnimator.RESTART
-        mAnimator.interpolator = LinearInterpolator()
-        mAnimator.duration = mDuration
-        // 设置动画的回调
-        mAnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener { animation ->
-            progress = animation.animatedValue as Float
-            post { this.postInvalidate() }
+        mAnimator.apply {
+            setFloatValues(0f, mProgress)
+            repeatCount = 0
+            repeatMode = ValueAnimator.RESTART
+            interpolator = LinearInterpolator()
+            duration = mDuration
+            // 设置动画的回调
+            mAnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener { animation ->
+                mProgress = animation.animatedValue as Float
+                post { postInvalidate() }
+            }
+            addUpdateListener(mAnimatorUpdateListener)
+            start()
         }
-        mAnimator.addUpdateListener(mAnimatorUpdateListener)
-        mAnimator.start()
     }
 
     /**
@@ -486,7 +476,7 @@ class SmartProgressBar @JvmOverloads constructor(
                 val linearGradient: Shader = LinearGradient(
                         mBorderWidth,
                         (height - mBorderWidth * 2) / 2,
-                        mBorderWidth + progress / max * (width - mBorderWidth * 2),
+                        mBorderWidth + mProgress / mMaxProgress * (width - mBorderWidth * 2),
                         (height - mBorderWidth * 2) / 2,
                         mProgressColors!!,
                         mProgressPositions, Shader.TileMode.MIRROR
@@ -499,7 +489,7 @@ class SmartProgressBar @JvmOverloads constructor(
                         (width - mBorderWidth * 2) / 2,
                         height - mBorderWidth,
                         (width - mBorderWidth * 2) / 2,
-                        height - progress / max * (height - mBorderWidth * 2) - mBorderWidth,
+                        height - mProgress / mMaxProgress * (height - mBorderWidth * 2) - mBorderWidth,
                         mProgressColors!!,
                         mProgressPositions, Shader.TileMode.MIRROR
                 )
@@ -609,7 +599,7 @@ class SmartProgressBar @JvmOverloads constructor(
         mProgressPath.rewind()
         mHorizontalRectF.left = mBorderWidth
         mHorizontalRectF.top = mBorderWidth
-        mHorizontalRectF.right = mBorderWidth + progress / max * (width - mBorderWidth * 2)
+        mHorizontalRectF.right = mBorderWidth + mProgress / mMaxProgress * (width - mBorderWidth * 2)
         mHorizontalRectF.bottom = height - mBorderWidth
         mProgressPath.addRoundRect(mHorizontalRectF, mRadii, Path.Direction.CW)
         canvas.drawPath(mProgressPath, mProgressPaint)
@@ -649,7 +639,7 @@ class SmartProgressBar @JvmOverloads constructor(
         mProgressPath.rewind()
         mVerticalRectF.left = mBorderWidth
         mVerticalRectF.top =
-                height - progress / max * (height - mBorderWidth * 2) - mBorderWidth
+                height - mProgress / mMaxProgress * (height - mBorderWidth * 2) - mBorderWidth
         mVerticalRectF.right = width - mBorderWidth
         mVerticalRectF.bottom = height - mBorderWidth
         mProgressPath.addRoundRect(mVerticalRectF, mRadii, Path.Direction.CW)
@@ -716,13 +706,13 @@ class SmartProgressBar @JvmOverloads constructor(
                 mShadowPaint.color = mShadowColor
                 mShadowPath.rewind()
                 when {
-                    progress / max <= 0.92f -> {
+                    mProgress / mMaxProgress <= 0.92f -> {
                         when {
                             mClockwise -> {
-                                mShadowPath.addArc(mRingRectF, 0f, 360 * progress / max)
+                                mShadowPath.addArc(mRingRectF, 0f, 360 * mProgress / mMaxProgress)
                             }
                             else -> {
-                                mShadowPath.addArc(mRingRectF, 0f, -360 * progress / max)
+                                mShadowPath.addArc(mRingRectF, 0f, -360 * mProgress / mMaxProgress)
                             }
                         }
                     }
@@ -745,10 +735,10 @@ class SmartProgressBar @JvmOverloads constructor(
         mProgressPath.rewind()
         when {
             mClockwise -> {
-                mProgressPath.addArc(mRingRectF, 0f, 360 * progress / max)
+                mProgressPath.addArc(mRingRectF, 0f, 360 * mProgress / mMaxProgress)
             }
             else -> {
-                mProgressPath.addArc(mRingRectF, 0f, -360 * progress / max)
+                mProgressPath.addArc(mRingRectF, 0f, -360 * mProgress / mMaxProgress)
             }
         }
         canvas.drawPath(mProgressPath, mProgressPaint)
@@ -784,17 +774,17 @@ class SmartProgressBar @JvmOverloads constructor(
             }
         }
         when {
-            progress / max > 0.9f -> {
+            mProgress / mMaxProgress > 0.9f -> {
                 // 添加阴影效果
                 when {
-                    mShowShadow && progress / max > 0.92f -> {
+                    mShowShadow && mProgress / mMaxProgress > 0.92f -> {
                         mShadowPath.rewind()
                         when {
                             mClockwise -> {
-                                mShadowPath.addArc(mRingRectF, 360 * (progress / max) - 1, 1f)
+                                mShadowPath.addArc(mRingRectF, 360 * (mProgress / mMaxProgress) - 1, 1f)
                             }
                             else -> {
-                                mShadowPath.addArc(mRingRectF, -360 * (progress / max) + 1, -1f)
+                                mShadowPath.addArc(mRingRectF, -360 * (mProgress / mMaxProgress) + 1, -1f)
                             }
                         }
                         mShadowPaint.setShadowLayer(20f, 0f, 0f, mShadowColor)
@@ -807,13 +797,13 @@ class SmartProgressBar @JvmOverloads constructor(
                 mEndProgressPath.rewind()
                 when {
                     mClockwise -> {
-                        mEndProgressPath.addArc(mRingRectF, 360 * 0.9f, 360 * (progress / max - 0.9f))
+                        mEndProgressPath.addArc(mRingRectF, 360 * 0.9f, 360 * (mProgress / mMaxProgress - 0.9f))
                     }
                     else -> {
                         mEndProgressPath.addArc(
                                 mRingRectF,
                                 -360 * 0.9f,
-                                -360 * (progress / max - 0.9f)
+                                -360 * (mProgress / mMaxProgress - 0.9f)
                         )
                     }
                 }
@@ -862,10 +852,10 @@ class SmartProgressBar @JvmOverloads constructor(
         mSectorRectF.bottom = height - mBorderWidth
         when {
             mClockwise -> {
-                canvas.drawArc(mSectorRectF, 0f, 360 * progress / max, true, mProgressPaint)
+                canvas.drawArc(mSectorRectF, 0f, 360 * mProgress / mMaxProgress, true, mProgressPaint)
             }
             else -> {
-                canvas.drawArc(mSectorRectF, 0f, -360 * progress / max, true, mProgressPaint)
+                canvas.drawArc(mSectorRectF, 0f, -360 * mProgress / mMaxProgress, true, mProgressPaint)
             }
         }
         when {
@@ -884,11 +874,9 @@ class SmartProgressBar @JvmOverloads constructor(
      * @param canvas 画布
      */
     private fun drawPercentText(canvas: Canvas) {
-        var percent = (progress * 100 / max).toInt().toString()
-        when {
-            mIsShowPercentSign -> {
-                percent = "$percent%"
-            }
+        var percent = (mProgress * 100 / mMaxProgress).toInt().toString()
+        if (mIsShowPercentSign) {
+            percent = "$percent%"
         }
         val rect = Rect()
         // 获取字符串的宽高值
@@ -917,6 +905,7 @@ class SmartProgressBar @JvmOverloads constructor(
         internal var progress = 0F
 
         internal constructor(superState: Parcelable) : super(superState) {}
+
         private constructor(`in`: Parcel) : super(`in`) {
             progress = `in`.readFloat()
         }
@@ -941,7 +930,7 @@ class SmartProgressBar @JvmOverloads constructor(
         // Force our ancestor class to save its state
         val superState = super.onSaveInstanceState()
         val ss = superState?.let { SavedState(it) }
-        ss?.progress = progress
+        ss?.progress = getProgress()
         return ss
     }
 
@@ -985,31 +974,27 @@ class SmartProgressBar @JvmOverloads constructor(
 
     fun setProgressColorsResId(mProgressColorsResId: Int): SmartProgressBar {
         this.mProgressColorsResId = mProgressColorsResId
-        when {
-            mProgressColorsResId != 0 -> {
-                try {
-                    val colors = context.resources.getStringArray(mProgressColorsResId)
-                    mProgressColors = IntArray(colors.size)
-                    for (i in colors.indices) {
-                        mProgressColors!![i] = Color.parseColor(colors[i])
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+        if (mProgressColorsResId != 0) {
+            try {
+                val colors = context.resources.getStringArray(mProgressColorsResId)
+                mProgressColors = IntArray(colors.size)
+                for (i in colors.indices) {
+                    mProgressColors!![i] = Color.parseColor(colors[i])
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
         return this
     }
 
     fun reverseProgressColors(): SmartProgressBar {
-        when {
-            mProgressColors != null -> {
-                val tempProgressColors = IntArray(mProgressColors!!.size)
-                for (i in mProgressColors!!.indices) {
-                    tempProgressColors[mProgressColors!!.size - 1 - i] = mProgressColors!![i]
-                }
-                mProgressColors = tempProgressColors
+        if (mProgressColors != null) {
+            val tempProgressColors = IntArray(mProgressColors!!.size)
+            for (i in mProgressColors!!.indices) {
+                tempProgressColors[mProgressColors!!.size - 1 - i] = mProgressColors!![i]
             }
+            mProgressColors = tempProgressColors
         }
         return this
     }
@@ -1018,8 +1003,7 @@ class SmartProgressBar @JvmOverloads constructor(
         this.mProgressPositionsResId = mProgressPositionsResId
         if (mProgressPositionsResId != 0) {
             try {
-                val positions =
-                        context.resources.getIntArray(mProgressPositionsResId)
+                val positions = context.resources.getIntArray(mProgressPositionsResId)
                 mProgressPositions = FloatArray(positions.size)
                 for (i in positions.indices) {
                     mProgressPositions!![i] = positions[i] / 100f
@@ -1114,8 +1098,13 @@ class SmartProgressBar @JvmOverloads constructor(
         return this
     }
 
+    fun setShowShadow(showShadow: Boolean): SmartProgressBar {
+        this.mShowShadow = showShadow
+        return this
+    }
+
     fun setMax(max: Float): SmartProgressBar {
-        this.max = max
+        this.mMaxProgress = max
         return this
     }
 
@@ -1125,7 +1114,7 @@ class SmartProgressBar @JvmOverloads constructor(
     fun setProgressWithNoAnimation(progress: Float): SmartProgressBar {
         post {
             cancelProgressAnimation()
-            val lastProgress = this.progress
+            val lastProgress = this.mProgress
             startProgressAnimation(lastProgress, progress, 0)
         }
         return this
@@ -1141,13 +1130,13 @@ class SmartProgressBar @JvmOverloads constructor(
         }
         postDelayed({
             cancelProgressAnimation()
-            val lastProgress = this.progress
+            val lastProgress = this.mProgress
             when {
-                progress > max -> {
-                    this.progress = max
+                progress > mMaxProgress -> {
+                    this.mProgress = mMaxProgress
                 }
                 progress < 0 -> {
-                    this.progress = 0f
+                    this.mProgress = 0f
                 }
             }
             startProgressAnimation(lastProgress, progress, duration)
@@ -1156,11 +1145,11 @@ class SmartProgressBar @JvmOverloads constructor(
     }
 
     fun getMax(): Float {
-        return max
+        return mMaxProgress
     }
 
     fun getProgress(): Float {
-        return progress
+        return mProgress
     }
 
     fun addProgressAnimatorUpdateListener(progressAnimatorUpdateListener: ValueAnimator.AnimatorUpdateListener): SmartProgressBar {
@@ -1177,19 +1166,21 @@ class SmartProgressBar @JvmOverloads constructor(
      * 开始进度动画
      */
     private fun startProgressAnimation(lastProgress: Float, progress: Float, duration: Long) {
-        mProgressAnimator.setFloatValues(lastProgress, progress)
-        mProgressAnimator.interpolator = LinearInterpolator()
-        mProgressAnimator.duration = duration
-        mProgressAnimator.removeAllUpdateListeners()
-        mProgressAnimator.removeAllListeners()
-        mProgressAnimator.addUpdateListener(this)
-        mProgressAnimatorUpdateListener.forEach {
-            mProgressAnimator.addUpdateListener(it)
+        mProgressAnimator.apply {
+            setFloatValues(lastProgress, progress)
+            interpolator = LinearInterpolator()
+            this.duration = duration
+            removeAllUpdateListeners()
+            removeAllListeners()
+            addUpdateListener(this@SmartProgressBar)
+            mProgressAnimatorUpdateListener.forEach {
+                addUpdateListener(it)
+            }
+            mProgressAnimatorListener.forEach {
+                addListener(it)
+            }
+            start()
         }
-        mProgressAnimatorListener.forEach {
-            mProgressAnimator.addListener(it)
-        }
-        mProgressAnimator.start()
     }
 
     /**
@@ -1210,16 +1201,18 @@ class SmartProgressBar @JvmOverloads constructor(
      * 取消进度动画
      */
     fun cancelProgressAnimation() {
-        mProgressAnimator.removeAllUpdateListeners()
-        mProgressAnimator.removeAllListeners()
-        mProgressAnimator.cancel()
+        mProgressAnimator.apply {
+            removeAllUpdateListeners()
+            removeAllListeners()
+            cancel()
+        }
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
         val animatedValue = animation.animatedValue as Float
-        progress = when {
-            animatedValue >= max -> {
-                max
+        mProgress = when {
+            animatedValue >= mMaxProgress -> {
+                mMaxProgress
             }
             animatedValue <= 0 -> {
                 0f
@@ -1244,17 +1237,6 @@ class SmartProgressBar @JvmOverloads constructor(
         return (dpValue * scale + 0.5f).toInt()
     }
 
-    /**
-     * px转dp
-     *
-     * @param pxValue px值
-     * @return dp值
-     */
-    private fun px2dp(context: Context, pxValue: Float): Int {
-        val scale = context.resources.displayMetrics.density
-        return (pxValue / scale + 0.5f).toInt()
-    }
-
     companion object {
         private const val DEFAULT_WIDTH = 100f
         private const val DEFAULT_HEIGHT = 100f
@@ -1268,7 +1250,7 @@ class SmartProgressBar @JvmOverloads constructor(
     }
 
     init {
-        attrs?.let { initAttributes(context, it, defStyleAttr) }
+        initAttrs(context, attrs, defStyleAttr)
         init()
     }
 }

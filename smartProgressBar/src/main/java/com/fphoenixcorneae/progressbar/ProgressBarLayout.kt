@@ -252,7 +252,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         setProgressEndColor(mProgressEndColor)
         setClockwise(mClockwise)
         setRadius(mRadius)
-        mSmartProgressBar.mShowShadow = mShowShadow
+        mSmartProgressBar.setShowShadow(mShowShadow)
         addView(mSmartProgressBar, progressLp)
     }
 
@@ -417,7 +417,7 @@ class ProgressBarLayout @JvmOverloads constructor(
             mRlTemperatureParent!!.visibility = View.VISIBLE
 
             // 更新温度
-            addProgressAnimatorUpdateListener(ValueAnimator.AnimatorUpdateListener {
+            addProgressAnimatorUpdateListener {
                 val animatedValue = it.animatedValue as Float
                 Log.i("animatedValue", "setTemperatureText---${animatedValue}")
                 when (isClockwise) {
@@ -428,7 +428,7 @@ class ProgressBarLayout @JvmOverloads constructor(
                         mTvTemperature!!.text = beginTemperature.toInt().toString()
                     }
                 }
-            })
+            }
 
             // 更新圆环进度
             val progress = max
@@ -460,7 +460,7 @@ class ProgressBarLayout @JvmOverloads constructor(
         if (mTvTime != null) {
             mTvTime!!.visibility = View.VISIBLE
             // 更新时间
-            addProgressAnimatorUpdateListener(ValueAnimator.AnimatorUpdateListener {
+            addProgressAnimatorUpdateListener {
                 val animatedValue = it.animatedValue as Float
                 val time = animatedValue.toLong()
                 try {
@@ -489,7 +489,7 @@ class ProgressBarLayout @JvmOverloads constructor(
                 } catch (e: NumberFormatException) {
                     e.printStackTrace()
                 }
-            })
+            }
 
             // 更新圆环进度
             this.max = secondTotalTime.toFloat()

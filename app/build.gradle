@@ -34,6 +34,6 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    implementation 'com.github.FPhoenixCorneaE:SmartProgressBar:1.0.2'
-//    implementation project(path: ':smartprogressbar')
+//    implementation 'com.github.FPhoenixCorneaE:SmartProgressBar:1.0.3'
+    implementation project(path: ':smartProgressBar')
 }

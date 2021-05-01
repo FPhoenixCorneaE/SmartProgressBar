@@ -1,8 +1,7 @@
-package com.wkz.smartprogressbar
+package com.fphoenixcorneae.smartprogressbar
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
